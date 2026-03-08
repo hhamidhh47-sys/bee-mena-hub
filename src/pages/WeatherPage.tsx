@@ -101,6 +101,18 @@ const WeatherPage = () => {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [apiaryLocations, setApiaryLocations] = useState<{ id?: number; name: string; lat: number; lng: number }[]>([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("nahali-apiary-locations");
+    if (saved) {
+      try {
+        setApiaryLocations(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse apiary locations");
+      }
+    }
+  }, []);
 
   const fetchWeather = useCallback(async (lat: number, lng: number) => {
     setLoading(true);
