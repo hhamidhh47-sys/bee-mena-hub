@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import beeLogo from "@/assets/bee-logo.png";
 import { useHiveStats, useProfile, updateProfile } from "@/hooks/useDatabase";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/hooks/useAuth";
 import { exportDatabase, downloadBackup, importDatabase } from "@/lib/backup";
 import { useRef, useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
