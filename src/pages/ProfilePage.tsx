@@ -4,6 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import beeLogo from "@/assets/bee-logo.png";
 import { useHiveStats } from "@/hooks/useDatabase";
+import { useTheme } from "@/hooks/useTheme";
 import { exportDatabase, downloadBackup, importDatabase } from "@/lib/backup";
 import { useRef } from "react";
 import { toast } from "@/hooks/use-toast";
