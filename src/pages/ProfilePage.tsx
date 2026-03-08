@@ -17,7 +17,7 @@ const ProfilePage = () => {
   const stats = useHiveStats();
   const profile = useProfile();
   const { theme, toggleTheme } = useTheme();
-  const { logout } = useAuth();
+  const { logout, authEnabled, setAuthRequired, user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState({
