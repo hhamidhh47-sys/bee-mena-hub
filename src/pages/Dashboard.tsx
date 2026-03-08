@@ -10,6 +10,8 @@ import { useHives, useHiveStats, useTasks, useProfile } from "@/hooks/useDatabas
 import { useState } from "react";
 
 const Dashboard = () => {
+  const [fabOpen, setFabOpen] = useState(false);
+  const navigate = useNavigate();
   const hives = useHives();
   const hiveStats = useHiveStats();
   const tasks = useTasks(new Date().toISOString().split("T")[0]);
