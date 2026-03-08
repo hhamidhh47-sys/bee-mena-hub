@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/useTheme";
 import Dashboard from "./pages/Dashboard";
 import HivesPage from "./pages/HivesPage";
+import StorePage from "./pages/StorePage";
 import SchedulePage from "./pages/SchedulePage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import ProfilePage from "./pages/ProfilePage";
