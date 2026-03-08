@@ -74,9 +74,9 @@ const App = () => {
 };
 
 function LoginRoute() {
-  const { user, loading } = useAuth();
+  const { user, loading, authEnabled } = useAuth();
   if (loading) return null;
-  if (user) return <Navigate to="/" replace />;
+  if (!authEnabled || user) return <Navigate to="/" replace />;
   return <LoginPage />;
 }
 
