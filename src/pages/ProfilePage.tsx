@@ -106,7 +106,7 @@ const ProfilePage = () => {
               <p className="font-medium">{item.label}</p>
               {item.value && <p className="text-sm text-muted-foreground">{item.value}</p>}
             </div>
-            {item.toggle ? <Switch /> : <ChevronLeft className="w-5 h-5 text-muted-foreground" />}
+            {item.toggle ? <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} /> : <ChevronLeft className="w-5 h-5 text-muted-foreground" />}
           </div>
         ))}
       </div>
