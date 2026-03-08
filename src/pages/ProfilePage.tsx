@@ -228,6 +228,24 @@ const ProfilePage = () => {
         </div>
       </div>
 
+      {/* Quick Links */}
+      <div className="bg-card rounded-2xl border border-border p-4 mb-6">
+        <h3 className="font-bold mb-3">أدوات إضافية</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { icon: Cloud, label: "مراقبة الطقس", path: "/weather", color: "text-blue-500" },
+            { icon: Flower2, label: "مواسم الإزهار", path: "/seasons", color: "text-nature" },
+            { icon: BookOpen, label: "المكتبة التعليمية", path: "/education", color: "text-primary" },
+            { icon: Stethoscope, label: "دليل الخبراء", path: "/experts", color: "text-accent" },
+          ].map(item => (
+            <Link key={item.path} to={item.path} className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-all">
+              <item.icon className={`w-5 h-5 ${item.color}`} />
+              <span className="text-sm font-medium">{item.label}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
       {/* Subscription Badge */}
       <div className="gradient-nature rounded-2xl p-4 mb-6 flex items-center gap-4 text-secondary-foreground">
         <img src={beeLogo} alt="Premium" className="w-12 h-12" />
