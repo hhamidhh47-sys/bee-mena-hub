@@ -3,11 +3,13 @@ import Dexie, { type EntityTable } from "dexie";
 // Types
 export interface Hive {
   id?: number;
+  code?: string;
   name: string;
   location: string;
   queenStatus: "mated" | "weak" | "virgin" | "cell" | "missing";
   lastInspection: string;
   honeyProduction: number;
+  frameCount?: number;
   alerts?: number;
   notes?: string;
   createdAt: Date;
