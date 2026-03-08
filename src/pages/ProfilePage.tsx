@@ -237,6 +237,14 @@ const ProfilePage = () => {
             { icon: Flower2, label: "مواسم الإزهار", path: "/seasons", color: "text-nature" },
             { icon: BookOpen, label: "المكتبة التعليمية", path: "/education", color: "text-primary" },
             { icon: Stethoscope, label: "دليل الخبراء", path: "/experts", color: "text-accent" },
+            { icon: MapPin, label: "خريطة المناحل", path: "/map", color: "text-blue-600" },
+            { icon: QrCode, label: "رموز QR", path: "/qrcode", color: "text-foreground" },
+            { icon: Pill, label: "سجل العلاجات", path: "/treatments", color: "text-destructive" },
+            { icon: Crown, label: "سلالة الملكات", path: "/queens", color: "text-primary" },
+            { icon: Calculator, label: "حاسبة التغذية", path: "/feeding", color: "text-nature" },
+            { icon: Timer, label: "مؤقت الدخان", path: "/smoker-timer", color: "text-accent" },
+            { icon: DollarSign, label: "العائد (ROI)", path: "/roi", color: "text-nature" },
+            { icon: Download, label: "تصدير البيانات", path: "/export", color: "text-foreground" },
           ].map(item => (
             <Link key={item.path} to={item.path} className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-all">
               <item.icon className={`w-5 h-5 ${item.color}`} />

@@ -116,7 +116,7 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Quick Access - New Features */}
+      {/* Quick Access - Features */}
       <section className="mb-8">
         <h3 className="text-lg font-bold mb-3">اكتشف المزيد</h3>
         <div className="grid grid-cols-4 gap-3">
@@ -125,6 +125,14 @@ const Dashboard = () => {
             { icon: Flower2, label: "المواسم", path: "/seasons", color: "bg-nature/10 text-nature" },
             { icon: BookOpen, label: "التعلّم", path: "/education", color: "bg-primary/10 text-primary" },
             { icon: Users, label: "الخبراء", path: "/experts", color: "bg-accent/10 text-accent" },
+            { icon: MapPin, label: "الخريطة", path: "/map", color: "bg-blue-600/10 text-blue-600" },
+            { icon: QrCode, label: "QR", path: "/qrcode", color: "bg-muted text-foreground" },
+            { icon: Pill, label: "العلاجات", path: "/treatments", color: "bg-destructive/10 text-destructive" },
+            { icon: Crown, label: "الملكات", path: "/queens", color: "bg-primary/10 text-primary" },
+            { icon: Calculator, label: "التغذية", path: "/feeding", color: "bg-nature/10 text-nature" },
+            { icon: Timer, label: "المدخن", path: "/smoker-timer", color: "bg-accent/10 text-accent" },
+            { icon: DollarSign, label: "العائد", path: "/roi", color: "bg-nature/10 text-nature" },
+            { icon: Download, label: "تصدير", path: "/export", color: "bg-muted text-foreground" },
           ].map(item => (
             <Link key={item.path} to={item.path} className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-card border border-border hover:border-primary/30 transition-all">
               <div className={`w-10 h-10 rounded-xl ${item.color} flex items-center justify-center`}>
