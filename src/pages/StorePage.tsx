@@ -38,7 +38,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, Package, Droplets, Users, Pencil, Trash2, Check, ChevronsUpDown, Receipt, AlertCircle, DollarSign, Eye, X, Phone, MapPin } from "lucide-react";
+import { Plus, Search, Package, Droplets, Users, Pencil, Trash2, Check, ChevronsUpDown, Receipt, AlertCircle, DollarSign, Eye, X, Phone, MapPin, Printer } from "lucide-react";
 import { useHives, useHiveStock, useHoneyStock, useCustomers, addHiveStock, updateHiveStock, deleteHiveStock, addHoneyStock, updateHoneyStock, deleteHoneyStock, addCustomer, updateCustomer, deleteCustomer, useInvoices, addInvoice, updateInvoice, deleteInvoice, generateInvoiceNumber, useCustomerDebts, addPayment, usePayments } from "@/hooks/useDatabase";
 import type { HiveStock, HoneyStock, Customer, InvoiceItem } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
@@ -1009,6 +1009,63 @@ const InvoiceViewDialog = ({ invoiceId, onClose }: { invoiceId: number; onClose:
     setPayAmount(0);
   };
 
+  const handlePrint = () => {
+    const itemsRows = invoice.items.map(item =>
+      `<tr><td style="padding:8px;border-bottom:1px solid #e5e5e5">${item.productName}</td><td style="padding:8px;border-bottom:1px solid #e5e5e5;text-align:center">${item.quantity}</td><td style="padding:8px;border-bottom:1px solid #e5e5e5;text-align:center">${item.unitPrice}</td><td style="padding:8px;border-bottom:1px solid #e5e5e5;text-align:left">${item.total} ر.س</td></tr>`
+    ).join("");
+
+    const paymentsRows = payments?.length ? payments.map(p =>
+      `<tr><td style="padding:6px;border-bottom:1px solid #eee">${new Date(p.date).toLocaleDateString("ar-SA")}</td><td style="padding:6px;border-bottom:1px solid #eee;text-align:center">${p.method === "cash" ? "نقداً" : p.method === "transfer" ? "تحويل" : "أخرى"}</td><td style="padding:6px;border-bottom:1px solid #eee;text-align:left">${p.amount} ر.س</td></tr>`
+    ).join("") : "";
+
+    const html = `<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>فاتورة ${invoice.invoiceNumber}</title><style>
+      body{font-family:'Segoe UI',Tahoma,sans-serif;margin:0;padding:40px;color:#333;direction:rtl}
+      .header{text-align:center;margin-bottom:30px;padding-bottom:20px;border-bottom:3px solid #d4a020}
+      .header h1{margin:0;color:#d4a020;font-size:28px}
+      .header p{margin:4px 0;color:#666;font-size:14px}
+      .info{display:flex;justify-content:space-between;margin-bottom:24px}
+      .info div{font-size:14px}
+      .info .label{color:#888;font-size:12px}
+      table{width:100%;border-collapse:collapse;margin-bottom:20px}
+      th{background:#f8f4e8;padding:10px 8px;text-align:right;font-size:13px;color:#666;border-bottom:2px solid #d4a020}
+      td{font-size:14px}
+      .totals{background:#f8f8f5;border-radius:8px;padding:16px;margin-bottom:20px}
+      .totals .row{display:flex;justify-content:space-between;padding:4px 0;font-size:14px}
+      .totals .row.bold{font-weight:bold;font-size:16px;border-top:1px solid #ddd;padding-top:8px;margin-top:4px}
+      .payments{margin-top:16px}
+      .payments h3{font-size:15px;margin-bottom:8px;color:#666}
+      .notes{margin-top:16px;padding:12px;background:#fffef5;border-right:3px solid #d4a020;border-radius:4px;font-size:13px;color:#666}
+      .footer{text-align:center;margin-top:40px;padding-top:16px;border-top:1px solid #eee;font-size:12px;color:#999}
+      @media print{body{padding:20px}button{display:none!important}}
+    </style></head><body>
+      <div class="header">
+        <h1>🐝 فاتورة مبيعات</h1>
+        <p>رقم الفاتورة: <strong>${invoice.invoiceNumber}</strong></p>
+      </div>
+      <div class="info">
+        <div><span class="label">العميل</span><br/><strong>${invoice.customerName}</strong></div>
+        <div><span class="label">التاريخ</span><br/><strong>${new Date(invoice.date).toLocaleDateString("ar-SA")}</strong></div>
+        <div><span class="label">الحالة</span><br/><strong>${invoice.status === "paid" ? "✅ مدفوعة" : invoice.status === "partial" ? "⏳ جزئية" : "❌ غير مدفوعة"}</strong></div>
+      </div>
+      <table>
+        <thead><tr><th>المنتج</th><th style="text-align:center">الكمية</th><th style="text-align:center">سعر الوحدة</th><th style="text-align:left">المجموع</th></tr></thead>
+        <tbody>${itemsRows}</tbody>
+      </table>
+      <div class="totals">
+        <div class="row bold"><span>الإجمالي</span><span>${invoice.totalAmount} ر.س</span></div>
+        <div class="row" style="color:#4a8c5c"><span>المدفوع</span><span>${invoice.paidAmount} ر.س</span></div>
+        ${remaining > 0 ? `<div class="row" style="color:#dc2626"><span>المتبقي</span><span>${remaining} ر.س</span></div>` : ""}
+      </div>
+      ${paymentsRows ? `<div class="payments"><h3>سجل الدفعات</h3><table><thead><tr><th>التاريخ</th><th style="text-align:center">الطريقة</th><th style="text-align:left">المبلغ</th></tr></thead><tbody>${paymentsRows}</tbody></table></div>` : ""}
+      ${invoice.notes ? `<div class="notes"><strong>ملاحظات:</strong> ${invoice.notes}</div>` : ""}
+      <div class="footer">تم إنشاء هذه الفاتورة من نظام إدارة المناحل</div>
+      <script>window.onload=function(){window.print()}</script>
+    </body></html>`;
+
+    const win = window.open("", "_blank");
+    if (win) { win.document.write(html); win.document.close(); }
+  };
+
   return (
     <Dialog open onOpenChange={(o) => { if (!o) { setIsEditing(false); onClose(); } }}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
@@ -1016,9 +1073,14 @@ const InvoiceViewDialog = ({ invoiceId, onClose }: { invoiceId: number; onClose:
           <div className="flex items-center justify-between">
             <DialogTitle>فاتورة {invoice.invoiceNumber}</DialogTitle>
             {!isEditing && (
-              <Button variant="outline" size="sm" onClick={startEditing}>
-                <Pencil className="w-3 h-3 ml-1" /> تعديل
-              </Button>
+              <div className="flex gap-1">
+                <Button variant="outline" size="sm" onClick={handlePrint}>
+                  <Printer className="w-3 h-3 ml-1" /> طباعة
+                </Button>
+                <Button variant="outline" size="sm" onClick={startEditing}>
+                  <Pencil className="w-3 h-3 ml-1" /> تعديل
+                </Button>
+              </div>
             )}
           </div>
         </DialogHeader>
