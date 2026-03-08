@@ -2,7 +2,7 @@ import AppLayout from "@/components/AppLayout";
 import StatCard from "@/components/StatCard";
 import HiveCard from "@/components/HiveCard";
 import TaskCard from "@/components/TaskCard";
-import { Grid3X3, Droplets, AlertTriangle, TrendingUp, Plus, ChevronLeft, X, Bug, CalendarPlus, Wheat, Cloud, Flower2, BookOpen, Users } from "lucide-react";
+import { Grid3X3, Droplets, AlertTriangle, TrendingUp, Plus, ChevronLeft, X, Bug, CalendarPlus, Wheat, Cloud, Flower2, BookOpen, Users, MapPin, QrCode, Pill, Calculator, Timer, Download, Crown, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-honey.jpg";
