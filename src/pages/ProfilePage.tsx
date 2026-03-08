@@ -86,6 +86,7 @@ const ProfilePage = () => {
   const yearsExperience = new Date().getFullYear() - (profile?.startYear || 2018);
 
   const menuItems = [
+    { icon: Lock, label: "تسجيل الدخول مطلوب", toggleAuth: true },
     { icon: Bell, label: "الإشعارات", value: "مفعّلة" },
     { icon: Globe, label: "اللغة", value: "العربية" },
     { icon: Moon, label: "الوضع الليلي", toggle: true },
