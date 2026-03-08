@@ -50,6 +50,7 @@ const HiveStockTab = () => {
   const [search, setSearch] = useState("");
   const [editItem, setEditItem] = useState<HiveStock | null>(null);
   const [form, setForm] = useState({ name: "", quantity: 1, pricePerUnit: 0, status: "available" as HiveStock["status"], notes: "" });
+  const [hivePickerOpen, setHivePickerOpen] = useState(false);
 
   const resetForm = () => {
     setForm({ name: "", quantity: 1, pricePerUnit: 0, status: "available", notes: "" });
