@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 
 const ProfilePage = () => {
   const stats = useHiveStats();
+  const { theme, toggleTheme } = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleExport = async () => {
