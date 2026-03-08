@@ -64,9 +64,20 @@ const MapPage = () => {
     if (!mapRef.current || mapInstance.current) return;
 
     const map = L.map(mapRef.current).setView([24.7136, 46.6753], 6);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    const streetLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap",
-    }).addTo(map);
+    });
+    const satelliteLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+      attribution: "© Esri",
+    });
+
+    streetLayer.addTo(map);
+
+    L.control.layers(
+      { "خريطة عادية": streetLayer, "قمر صناعي 🛰️": satelliteLayer },
+      {},
+      { position: "topright" }
+    ).addTo(map);
 
     map.on("click", (e: L.LeafletMouseEvent) => {
       setEditingLocation(null);
