@@ -43,10 +43,13 @@ const HivesPage = () => {
     }
     await addHive({
       name,
+      code: form.code.trim() || undefined,
       location,
       queenStatus: form.queenStatus,
       lastInspection: "جديدة",
       honeyProduction: Math.max(0, form.honeyProduction),
+      frameCount: Math.max(0, form.frameCount),
+      notes: form.notes.trim() || undefined,
     });
     resetForm();
     setAddOpen(false);

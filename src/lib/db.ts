@@ -126,7 +126,7 @@ const db = new Dexie("NahaliDB") as Dexie & {
   profile: EntityTable<UserProfile, "id">;
 };
 
-db.version(4).stores({
+db.version(5).stores({
   authUsers: "++id, &username",
   hives: "++id, name, location, queenStatus, createdAt",
   tasks: "++id, date, type, completed, hiveId",
