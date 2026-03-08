@@ -109,10 +109,41 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Quick Action */}
-      <Button className="fixed left-4 bottom-24 w-14 h-14 rounded-full shadow-honey gradient-honey text-primary-foreground">
-        <Plus className="w-6 h-6" />
-      </Button>
+      {/* Quick Actions FAB */}
+      {fabOpen && (
+        <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setFabOpen(false)} />
+      )}
+      <div className="fixed left-4 bottom-24 z-50 flex flex-col-reverse items-center gap-3">
+        {fabOpen && (
+          <>
+            <Button
+              onClick={() => { setFabOpen(false); navigate("/hives"); }}
+              className="w-12 h-12 rounded-full shadow-lg bg-nature text-nature-foreground hover:bg-nature/90 animate-in fade-in slide-in-from-bottom-2"
+            >
+              <Bug className="w-5 h-5" />
+            </Button>
+            <Button
+              onClick={() => { setFabOpen(false); navigate("/schedule"); }}
+              className="w-12 h-12 rounded-full shadow-lg bg-accent text-accent-foreground hover:bg-accent/90 animate-in fade-in slide-in-from-bottom-2"
+            >
+              <CalendarPlus className="w-5 h-5" />
+            </Button>
+            <Button
+              onClick={() => { setFabOpen(false); navigate("/analytics"); }}
+              className="w-12 h-12 rounded-full shadow-lg bg-secondary text-secondary-foreground hover:bg-secondary/90 animate-in fade-in slide-in-from-bottom-2"
+            >
+              <Wheat className="w-5 h-5" />
+            </Button>
+          </>
+        )}
+        <Button
+          onClick={() => setFabOpen((o) => !o)}
+          className="w-14 h-14 rounded-full shadow-honey gradient-honey text-primary-foreground transition-transform duration-200"
+          style={{ transform: fabOpen ? "rotate(45deg)" : "rotate(0deg)" }}
+        >
+          <Plus className="w-6 h-6" />
+        </Button>
+      </div>
     </AppLayout>
   );
 };
