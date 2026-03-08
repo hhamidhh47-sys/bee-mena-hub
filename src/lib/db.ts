@@ -297,6 +297,95 @@ export async function seedDatabase() {
       location: "الرياض",
     });
   }
+
+  // Seed customers
+  const customerCount = await db.customers.count();
+  if (customerCount === 0) {
+    await db.customers.bulkAdd([
+      { name: "عبدالله العتيبي", phone: "0551234567", location: "الرياض", notes: "عميل دائم", createdAt: new Date(), updatedAt: new Date() },
+      { name: "سعود المطيري", phone: "0559876543", location: "جدة", notes: "", createdAt: new Date(), updatedAt: new Date() },
+      { name: "فهد الشمري", phone: "0543216789", location: "الدمام", notes: "يفضل عسل السدر", createdAt: new Date(), updatedAt: new Date() },
+      { name: "خالد الحربي", phone: "0567891234", location: "بريدة", notes: "", createdAt: new Date(), updatedAt: new Date() },
+    ]);
+  }
+
+  // Seed hive stock
+  const hiveStockCount = await db.hiveStock.count();
+  if (hiveStockCount === 0) {
+    await db.hiveStock.bulkAdd([
+      { name: "خلية خشبية كبيرة", quantity: 5, pricePerUnit: 350, status: "available", notes: "صناعة محلية", createdAt: new Date(), updatedAt: new Date() },
+      { name: "خلية لانجستروث", quantity: 3, pricePerUnit: 500, status: "available", notes: "مستوردة", createdAt: new Date(), updatedAt: new Date() },
+      { name: "خلية خشبية صغيرة", quantity: 1, pricePerUnit: 200, status: "reserved", notes: "محجوزة لعبدالله", createdAt: new Date(), updatedAt: new Date() },
+    ]);
+  }
+
+  // Seed honey stock
+  const honeyStockCount = await db.honeyStock.count();
+  if (honeyStockCount === 0) {
+    await db.honeyStock.bulkAdd([
+      { type: "عسل سدر", quantity: 20, unit: "كغ", pricePerUnit: 150, status: "available", notes: "موسم هذا العام", createdAt: new Date(), updatedAt: new Date() },
+      { type: "عسل زهور", quantity: 15, unit: "كغ", pricePerUnit: 80, status: "available", notes: "", createdAt: new Date(), updatedAt: new Date() },
+      { type: "عسل طلح", quantity: 8, unit: "كغ", pricePerUnit: 120, status: "available", notes: "", createdAt: new Date(), updatedAt: new Date() },
+    ]);
+  }
+
+  // Seed invoices
+  const invoiceCount = await db.invoices.count();
+  if (invoiceCount === 0) {
+    await db.invoices.bulkAdd([
+      {
+        invoiceNumber: "INV-0001",
+        customerId: 1,
+        customerName: "عبدالله العتيبي",
+        items: [
+          { productType: "honey", productName: "عسل سدر", quantity: 3, unitPrice: 150, total: 450 },
+          { productType: "hive", productName: "خلية خشبية كبيرة", quantity: 1, unitPrice: 350, total: 350 },
+        ],
+        totalAmount: 800,
+        paidAmount: 800,
+        status: "paid",
+        date: new Date(Date.now() - 7 * 86400000),
+        notes: "تم التسليم",
+        createdAt: new Date(Date.now() - 7 * 86400000),
+      },
+      {
+        invoiceNumber: "INV-0002",
+        customerId: 2,
+        customerName: "سعود المطيري",
+        items: [
+          { productType: "honey", productName: "عسل زهور", quantity: 5, unitPrice: 80, total: 400 },
+        ],
+        totalAmount: 400,
+        paidAmount: 200,
+        status: "partial",
+        date: new Date(Date.now() - 3 * 86400000),
+        dueDate: new Date(Date.now() + 14 * 86400000),
+        notes: "دفعة أولى 200 ر.س",
+        createdAt: new Date(Date.now() - 3 * 86400000),
+      },
+      {
+        invoiceNumber: "INV-0003",
+        customerId: 3,
+        customerName: "فهد الشمري",
+        items: [
+          { productType: "honey", productName: "عسل طلح", quantity: 4, unitPrice: 120, total: 480 },
+          { productType: "honey", productName: "عسل سدر", quantity: 2, unitPrice: 150, total: 300 },
+        ],
+        totalAmount: 780,
+        paidAmount: 0,
+        status: "unpaid",
+        date: new Date(Date.now() - 1 * 86400000),
+        dueDate: new Date(Date.now() + 30 * 86400000),
+        createdAt: new Date(Date.now() - 1 * 86400000),
+      },
+    ]);
+
+    // Seed payments for the paid and partial invoices
+    await db.payments.bulkAdd([
+      { invoiceId: 1, customerId: 1, amount: 800, method: "cash", date: new Date(Date.now() - 7 * 86400000), createdAt: new Date(Date.now() - 7 * 86400000) },
+      { invoiceId: 2, customerId: 2, amount: 200, method: "transfer", date: new Date(Date.now() - 3 * 86400000), createdAt: new Date(Date.now() - 3 * 86400000) },
+    ]);
+  }
 }
 
 export { db };
