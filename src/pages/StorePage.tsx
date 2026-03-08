@@ -228,6 +228,7 @@ const HoneyStockTab = () => {
   const [search, setSearch] = useState("");
   const [editItem, setEditItem] = useState<HoneyStock | null>(null);
   const [form, setForm] = useState({ type: "", quantity: 1, unit: "كغ", pricePerUnit: 0, status: "available" as HoneyStock["status"], notes: "" });
+  const [honeyHivePickerOpen, setHoneyHivePickerOpen] = useState(false);
 
   const resetForm = () => {
     setForm({ type: "", quantity: 1, unit: "كغ", pricePerUnit: 0, status: "available", notes: "" });
