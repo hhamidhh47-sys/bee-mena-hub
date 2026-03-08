@@ -18,9 +18,12 @@ const HivesPage = () => {
 
   const [form, setForm] = useState({
     name: "",
+    code: "",
     location: "",
     queenStatus: "mated" as "mated" | "weak" | "virgin" | "cell" | "missing",
     honeyProduction: 0,
+    frameCount: 10,
+    notes: "",
   });
 
   const resetForm = () => {
