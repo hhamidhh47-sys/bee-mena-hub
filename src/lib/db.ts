@@ -123,7 +123,7 @@ export async function seedDatabase() {
       {
         name: "خلية النعناع",
         location: "المزرعة الغربية",
-        queenStatus: "missing",
+        queenStatus: "virgin",
         lastInspection: "قبل أسبوعين",
         honeyProduction: 3,
         alerts: 1,
