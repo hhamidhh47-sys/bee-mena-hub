@@ -119,18 +119,40 @@ const HiveStockTab = () => {
             <div className="space-y-3">
               <div>
                 <Label>اختر خلية</Label>
-                <Select value={form.name} onValueChange={(v) => setForm(f => ({ ...f, name: v }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر من خلاياك..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {hives?.map(h => (
-                      <SelectItem key={h.id} value={h.name}>
-                        {h.name} - {h.location}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover open={hivePickerOpen} onOpenChange={setHivePickerOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                      {form.name || "ابحث واختر من خلاياك..."}
+                      <ChevronsUpDown className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="ابحث بالاسم أو الكود..." />
+                      <CommandList>
+                        <CommandEmpty>لا توجد خلايا مطابقة</CommandEmpty>
+                        <CommandGroup>
+                          {hives?.map(h => (
+                            <CommandItem
+                              key={h.id}
+                              value={`${h.name} ${h.code || ""} ${h.location}`}
+                              onSelect={() => {
+                                setForm(f => ({ ...f, name: h.name }));
+                                setHivePickerOpen(false);
+                              }}
+                            >
+                              <Check className={cn("ml-2 h-4 w-4", form.name === h.name ? "opacity-100" : "opacity-0")} />
+                              <div className="flex flex-col">
+                                <span>{h.name} {h.code ? `(${h.code})` : ""}</span>
+                                <span className="text-xs text-muted-foreground">{h.location}</span>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
