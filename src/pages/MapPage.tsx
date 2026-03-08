@@ -136,7 +136,13 @@ const MapPage = () => {
         </Button>
       </div>
 
-      <p className="text-sm text-muted-foreground mb-4 text-center">اضغط على الخريطة لإضافة موقع منحل جديد</p>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-muted-foreground">اضغط على الخريطة أو استخدم الزر لإضافة موقع</p>
+        <Button onClick={() => { setClickedLatLng({ lat: 24.7136, lng: 46.6753 }); setDialogOpen(true); }} size="sm" className="gradient-honey text-primary-foreground">
+          <Plus className="w-4 h-4 ml-1" />
+          إضافة منحل
+        </Button>
+      </div>
 
       {/* Locations List */}
       <section>
