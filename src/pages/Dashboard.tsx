@@ -6,26 +6,31 @@ import { Grid3X3, Droplets, AlertTriangle, TrendingUp, Plus, ChevronLeft } from 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-honey.jpg";
+import { useHives, useHiveStats, useTasks } from "@/hooks/useDatabase";
 
 const Dashboard = () => {
+  const hives = useHives();
+  const hiveStats = useHiveStats();
+  const tasks = useTasks(new Date().toISOString().split("T")[0]);
+
   const stats = [
     {
       title: "إجمالي الخلايا",
-      value: 24,
+      value: hiveStats?.total ?? 0,
       icon: <Grid3X3 className="w-5 h-5" />,
       variant: "honey" as const,
       trend: { value: 12, label: "هذا الشهر" },
     },
     {
       title: "إنتاج العسل",
-      value: "156 كغ",
+      value: `${hiveStats?.totalProduction ?? 0} كغ`,
       icon: <Droplets className="w-5 h-5" />,
       variant: "nature" as const,
       trend: { value: 8, label: "من الشهر الماضي" },
     },
     {
       title: "تنبيهات",
-      value: 3,
+      value: hiveStats?.withAlerts ?? 0,
       icon: <AlertTriangle className="w-5 h-5" />,
       variant: "warm" as const,
     },
@@ -37,58 +42,20 @@ const Dashboard = () => {
     },
   ];
 
-  const recentHives = [
-    {
-      id: "1",
-      name: "خلية الورد",
-      location: "المزرعة الشمالية",
-      queenStatus: "healthy" as const,
-      lastInspection: "قبل 3 أيام",
-      honeyProduction: 12,
-    },
-    {
-      id: "2",
-      name: "خلية السدر",
-      location: "المزرعة الجنوبية",
-      queenStatus: "weak" as const,
-      lastInspection: "قبل أسبوع",
-      honeyProduction: 8,
-      alerts: 2,
-    },
-  ];
-
-  const upcomingTasks = [
-    {
-      title: "فحص خلية الورد",
-      description: "فحص دوري للملكة والإنتاج",
-      time: "اليوم - 10:00 صباحاً",
-      type: "inspection" as const,
-    },
-    {
-      title: "تغذية الخلايا",
-      description: "تغذية شتوية للخلايا 5-10",
-      time: "غداً - 8:00 صباحاً",
-      type: "feeding" as const,
-    },
-  ];
+  const recentHives = (hives ?? []).slice(0, 2);
+  const upcomingTasks = (tasks ?? []).filter((t) => !t.completed).slice(0, 3);
 
   return (
     <AppLayout title="نحّالي">
       {/* Hero Section */}
       <section className="relative -mx-4 -mt-6 mb-8 overflow-hidden">
         <div className="relative h-48">
-          <img
-            src={heroImage}
-            alt="عسل طبيعي"
-            className="w-full h-full object-cover"
-          />
+          <img src={heroImage} alt="عسل طبيعي" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
           <div className="absolute bottom-4 right-4 left-4">
-            <h2 className="text-2xl font-bold text-foreground mb-1">
-              صباح الخير، أحمد! 🐝
-            </h2>
+            <h2 className="text-2xl font-bold text-foreground mb-1">صباح الخير، أحمد! 🐝</h2>
             <p className="text-muted-foreground">
-              لديك 3 مهام اليوم و 2 تنبيهات جديدة
+              لديك {upcomingTasks.length} مهام اليوم و {hiveStats?.withAlerts ?? 0} تنبيهات جديدة
             </p>
           </div>
         </div>
@@ -114,7 +81,7 @@ const Dashboard = () => {
         </div>
         <div className="space-y-4">
           {recentHives.map((hive) => (
-            <HiveCard key={hive.id} {...hive} />
+            <HiveCard key={hive.id} id={String(hive.id)} {...hive} />
           ))}
         </div>
       </section>
@@ -129,9 +96,12 @@ const Dashboard = () => {
           </Link>
         </div>
         <div className="space-y-3">
-          {upcomingTasks.map((task, index) => (
-            <TaskCard key={index} {...task} />
+          {upcomingTasks.map((task) => (
+            <TaskCard key={task.id} {...task} />
           ))}
+          {upcomingTasks.length === 0 && (
+            <p className="text-muted-foreground text-center py-4">لا توجد مهام لليوم</p>
+          )}
         </div>
       </section>
 

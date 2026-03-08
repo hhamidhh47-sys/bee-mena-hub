@@ -3,56 +3,32 @@ import TaskCard from "@/components/TaskCard";
 import { Button } from "@/components/ui/button";
 import { Plus, ChevronRight, ChevronLeft } from "lucide-react";
 import { useState } from "react";
+import { useTasks, toggleTask } from "@/hooks/useDatabase";
 
 const SchedulePage = () => {
-  const [selectedDay, setSelectedDay] = useState(8);
+  const today = new Date();
+  const [selectedDay, setSelectedDay] = useState(today.getDate());
 
-  const days = [
-    { num: 6, name: "سبت" },
-    { num: 7, name: "أحد" },
-    { num: 8, name: "إثنين" },
-    { num: 9, name: "ثلاثاء" },
-    { num: 10, name: "أربعاء" },
-    { num: 11, name: "خميس" },
-    { num: 12, name: "جمعة" },
+  const selectedDate = new Date(today.getFullYear(), today.getMonth(), selectedDay);
+  const dateStr = selectedDate.toISOString().split("T")[0];
+  const tasks = useTasks(dateStr);
+
+  // Generate week days around today
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - 3 + i);
+    const dayNames = ["أحد", "إثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة", "سبت"];
+    return { num: d.getDate(), name: dayNames[d.getDay()] };
+  });
+
+  const monthNames = [
+    "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
+    "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر",
   ];
 
-  const tasks = [
-    {
-      title: "فحص خلية الورد",
-      description: "فحص دوري للملكة والإنتاج",
-      time: "10:00 صباحاً",
-      type: "inspection" as const,
-      completed: false,
-    },
-    {
-      title: "تغذية الخلايا 5-10",
-      description: "تغذية شتوية بمحلول السكر",
-      time: "11:30 صباحاً",
-      type: "feeding" as const,
-      completed: true,
-    },
-    {
-      title: "حصاد خلية البرتقال",
-      description: "حصاد العسل الموسمي",
-      time: "2:00 مساءً",
-      type: "harvest" as const,
-      completed: false,
-    },
-    {
-      title: "إعطاء الدواء لخلية السدر",
-      description: "علاج الفاروا الدوري",
-      time: "4:00 مساءً",
-      type: "medication" as const,
-      completed: false,
-    },
-  ];
-
-  const monthlyTasks = [
-    { title: "فحص شامل للخلايا", date: "15 مارس", status: "upcoming" },
-    { title: "موسم إزهار الحمضيات", date: "20-30 مارس", status: "upcoming" },
-    { title: "تجهيز صناديق العسل", date: "25 مارس", status: "upcoming" },
-  ];
+  const handleToggle = async (taskId: number, completed: boolean) => {
+    await toggleTask(taskId, !completed);
+  };
 
   return (
     <AppLayout title="الجدولة والتذكيرات">
@@ -61,7 +37,7 @@ const SchedulePage = () => {
         <Button variant="ghost" size="icon">
           <ChevronRight className="w-5 h-5" />
         </Button>
-        <h2 className="text-lg font-bold">مارس 2026</h2>
+        <h2 className="text-lg font-bold">{monthNames[today.getMonth()]} {today.getFullYear()}</h2>
         <Button variant="ghost" size="icon">
           <ChevronLeft className="w-5 h-5" />
         </Button>
@@ -89,27 +65,14 @@ const SchedulePage = () => {
       <section className="mb-8">
         <h3 className="text-lg font-bold mb-4">مهام اليوم</h3>
         <div className="space-y-3">
-          {tasks.map((task, index) => (
-            <TaskCard key={index} {...task} />
+          {tasks?.map((task) => (
+            <div key={task.id} onClick={() => handleToggle(task.id!, task.completed)}>
+              <TaskCard {...task} />
+            </div>
           ))}
-        </div>
-      </section>
-
-      {/* Monthly Overview */}
-      <section className="mb-8">
-        <h3 className="text-lg font-bold mb-4">نظرة عامة على الشهر</h3>
-        <div className="bg-card rounded-2xl border border-border p-4">
-          <div className="space-y-4">
-            {monthlyTasks.map((task, index) => (
-              <div key={index} className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-primary" />
-                <div className="flex-1">
-                  <p className="font-medium">{task.title}</p>
-                  <p className="text-xs text-muted-foreground">{task.date}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          {tasks?.length === 0 && (
+            <p className="text-muted-foreground text-center py-8">لا توجد مهام لهذا اليوم</p>
+          )}
         </div>
       </section>
 
