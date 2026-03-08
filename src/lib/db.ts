@@ -60,6 +60,40 @@ export interface Sale {
   notes?: string;
 }
 
+export interface Invoice {
+  id?: number;
+  invoiceNumber: string;
+  customerId?: number;
+  customerName: string;
+  items: InvoiceItem[];
+  totalAmount: number;
+  paidAmount: number;
+  status: "paid" | "partial" | "unpaid";
+  date: Date;
+  dueDate?: Date;
+  notes?: string;
+  createdAt: Date;
+}
+
+export interface InvoiceItem {
+  productType: "hive" | "honey" | "other";
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+}
+
+export interface Payment {
+  id?: number;
+  invoiceId: number;
+  customerId?: number;
+  amount: number;
+  method: "cash" | "transfer" | "other";
+  date: Date;
+  notes?: string;
+  createdAt: Date;
+}
+
 export interface HiveStock {
   id?: number;
   name: string;
@@ -123,10 +157,12 @@ const db = new Dexie("NahaliDB") as Dexie & {
   hiveStock: EntityTable<HiveStock, "id">;
   honeyStock: EntityTable<HoneyStock, "id">;
   customers: EntityTable<Customer, "id">;
+  invoices: EntityTable<Invoice, "id">;
+  payments: EntityTable<Payment, "id">;
   profile: EntityTable<UserProfile, "id">;
 };
 
-db.version(5).stores({
+db.version(6).stores({
   authUsers: "++id, &username",
   hives: "++id, name, location, queenStatus, createdAt",
   tasks: "++id, date, type, completed, hiveId",
@@ -136,6 +172,8 @@ db.version(5).stores({
   hiveStock: "++id, name, status",
   honeyStock: "++id, type, status",
   customers: "++id, name, phone",
+  invoices: "++id, customerId, customerName, status, date, invoiceNumber",
+  payments: "++id, invoiceId, customerId, date",
   profile: "++id, userId",
 });
 
