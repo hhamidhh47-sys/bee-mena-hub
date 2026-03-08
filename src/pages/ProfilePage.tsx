@@ -258,14 +258,16 @@ const ProfilePage = () => {
         ))}
       </div>
 
-      {/* Logout */}
-      <button
-        onClick={logout}
-        className="w-full mt-6 flex items-center justify-center gap-2 p-4 text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
-      >
-        <LogOut className="w-5 h-5" />
-        <span className="font-medium">تسجيل الخروج</span>
-      </button>
+      {/* Logout - only show when auth is enabled and user is logged in */}
+      {authEnabled && user && (
+        <button
+          onClick={logout}
+          className="w-full mt-6 flex items-center justify-center gap-2 p-4 text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
+        >
+          <LogOut className="w-5 h-5" />
+          <span className="font-medium">تسجيل الخروج</span>
+        </button>
+      )}
 
       <p className="text-center text-xs text-muted-foreground mt-8">نحّالي الإصدار 1.0.0</p>
     </AppLayout>
