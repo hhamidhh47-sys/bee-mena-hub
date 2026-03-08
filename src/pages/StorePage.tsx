@@ -15,6 +15,19 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
   Table,
   TableBody,
   TableCell,
@@ -22,10 +35,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Search, Package, Droplets, Users, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Package, Droplets, Users, Pencil, Trash2, Check, ChevronsUpDown } from "lucide-react";
 import { useHives, useHiveStock, useHoneyStock, useCustomers, addHiveStock, updateHiveStock, deleteHiveStock, addHoneyStock, updateHoneyStock, deleteHoneyStock, addCustomer, updateCustomer, deleteCustomer } from "@/hooks/useDatabase";
 import type { HiveStock, HoneyStock, Customer } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 // --- Hive Stock Tab ---
 const HiveStockTab = () => {
@@ -36,6 +50,7 @@ const HiveStockTab = () => {
   const [search, setSearch] = useState("");
   const [editItem, setEditItem] = useState<HiveStock | null>(null);
   const [form, setForm] = useState({ name: "", quantity: 1, pricePerUnit: 0, status: "available" as HiveStock["status"], notes: "" });
+  const [hivePickerOpen, setHivePickerOpen] = useState(false);
 
   const resetForm = () => {
     setForm({ name: "", quantity: 1, pricePerUnit: 0, status: "available", notes: "" });
@@ -104,18 +119,40 @@ const HiveStockTab = () => {
             <div className="space-y-3">
               <div>
                 <Label>اختر خلية</Label>
-                <Select value={form.name} onValueChange={(v) => setForm(f => ({ ...f, name: v }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر من خلاياك..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {hives?.map(h => (
-                      <SelectItem key={h.id} value={h.name}>
-                        {h.name} - {h.location}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover open={hivePickerOpen} onOpenChange={setHivePickerOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                      {form.name || "ابحث واختر من خلاياك..."}
+                      <ChevronsUpDown className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="ابحث بالاسم أو الكود..." />
+                      <CommandList>
+                        <CommandEmpty>لا توجد خلايا مطابقة</CommandEmpty>
+                        <CommandGroup>
+                          {hives?.map(h => (
+                            <CommandItem
+                              key={h.id}
+                              value={`${h.name} ${h.code || ""} ${h.location}`}
+                              onSelect={() => {
+                                setForm(f => ({ ...f, name: h.name }));
+                                setHivePickerOpen(false);
+                              }}
+                            >
+                              <Check className={cn("ml-2 h-4 w-4", form.name === h.name ? "opacity-100" : "opacity-0")} />
+                              <div className="flex flex-col">
+                                <span>{h.name} {h.code ? `(${h.code})` : ""}</span>
+                                <span className="text-xs text-muted-foreground">{h.location}</span>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -191,6 +228,7 @@ const HoneyStockTab = () => {
   const [search, setSearch] = useState("");
   const [editItem, setEditItem] = useState<HoneyStock | null>(null);
   const [form, setForm] = useState({ type: "", quantity: 1, unit: "كغ", pricePerUnit: 0, status: "available" as HoneyStock["status"], notes: "" });
+  const [honeyHivePickerOpen, setHoneyHivePickerOpen] = useState(false);
 
   const resetForm = () => {
     setForm({ type: "", quantity: 1, unit: "كغ", pricePerUnit: 0, status: "available", notes: "" });
@@ -250,22 +288,55 @@ const HoneyStockTab = () => {
             <div className="space-y-3">
               <div>
                 <Label>مصدر العسل (خلية)</Label>
-                <Select value={form.type} onValueChange={(v) => setForm(f => ({ ...f, type: v }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر الخلية المصدر..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {hives?.map(h => (
-                      <SelectItem key={h.id} value={`عسل ${h.name}`}>
-                        {h.name} - {h.location} ({h.honeyProduction} كغ)
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="سدر">سدر</SelectItem>
-                    <SelectItem value="زهور">زهور</SelectItem>
-                    <SelectItem value="طلح">طلح</SelectItem>
-                    <SelectItem value="أخرى">أخرى</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Popover open={honeyHivePickerOpen} onOpenChange={setHoneyHivePickerOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                      {form.type || "ابحث واختر الخلية المصدر..."}
+                      <ChevronsUpDown className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="ابحث بالاسم أو الكود..." />
+                      <CommandList>
+                        <CommandEmpty>لا توجد خلايا مطابقة</CommandEmpty>
+                        <CommandGroup heading="خلاياك">
+                          {hives?.map(h => (
+                            <CommandItem
+                              key={h.id}
+                              value={`${h.name} ${h.code || ""} ${h.location}`}
+                              onSelect={() => {
+                                setForm(f => ({ ...f, type: `عسل ${h.name}` }));
+                                setHoneyHivePickerOpen(false);
+                              }}
+                            >
+                              <Check className={cn("ml-2 h-4 w-4", form.type === `عسل ${h.name}` ? "opacity-100" : "opacity-0")} />
+                              <div className="flex flex-col">
+                                <span>{h.name} {h.code ? `(${h.code})` : ""}</span>
+                                <span className="text-xs text-muted-foreground">{h.location} - {h.honeyProduction} كغ</span>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                        <CommandGroup heading="أنواع عامة">
+                          {["سدر", "زهور", "طلح", "أخرى"].map(t => (
+                            <CommandItem
+                              key={t}
+                              value={t}
+                              onSelect={() => {
+                                setForm(f => ({ ...f, type: t }));
+                                setHoneyHivePickerOpen(false);
+                              }}
+                            >
+                              <Check className={cn("ml-2 h-4 w-4", form.type === t ? "opacity-100" : "opacity-0")} />
+                              {t}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
