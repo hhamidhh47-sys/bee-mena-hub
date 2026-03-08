@@ -60,6 +60,40 @@ export interface Sale {
   notes?: string;
 }
 
+export interface Invoice {
+  id?: number;
+  invoiceNumber: string;
+  customerId?: number;
+  customerName: string;
+  items: InvoiceItem[];
+  totalAmount: number;
+  paidAmount: number;
+  status: "paid" | "partial" | "unpaid";
+  date: Date;
+  dueDate?: Date;
+  notes?: string;
+  createdAt: Date;
+}
+
+export interface InvoiceItem {
+  productType: "hive" | "honey" | "other";
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+}
+
+export interface Payment {
+  id?: number;
+  invoiceId: number;
+  customerId?: number;
+  amount: number;
+  method: "cash" | "transfer" | "other";
+  date: Date;
+  notes?: string;
+  createdAt: Date;
+}
+
 export interface HiveStock {
   id?: number;
   name: string;
