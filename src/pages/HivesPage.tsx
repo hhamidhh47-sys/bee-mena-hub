@@ -2,20 +2,34 @@ import AppLayout from "@/components/AppLayout";
 import HiveCard from "@/components/HiveCard";
 import HiveFormDialog from "@/components/HiveFormDialog";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Search, Filter, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { useHives, useHiveStats, addHive, updateHive } from "@/hooks/useDatabase";
+import { useHives, useHiveStats, addHive, updateHive, addHiveStock, addHoneyStock } from "@/hooks/useDatabase";
 import { toast } from "@/hooks/use-toast";
 import type { Hive } from "@/lib/db";
+import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 const HivesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editingHive, setEditingHive] = useState<Hive | null>(null);
+  const [sellOpen, setSellOpen] = useState(false);
+  const [sellHive, setSellHive] = useState<Hive | null>(null);
+  const [sellType, setSellType] = useState<"hive" | "honey">("hive");
+  const [sellPrice, setSellPrice] = useState(0);
+  const [sellQuantity, setSellQuantity] = useState(1);
   const hives = useHives(searchQuery);
   const stats = useHiveStats();
+  const navigate = useNavigate();
 
   const handleAdd = async (data: any) => {
     await addHive({
@@ -49,6 +63,40 @@ const HivesPage = () => {
   const openEdit = (hive: Hive) => {
     setEditingHive(hive);
     setEditOpen(true);
+  };
+
+  const openSell = (hive: Hive) => {
+    setSellHive(hive);
+    setSellPrice(0);
+    setSellQuantity(1);
+    setSellType("hive");
+    setSellOpen(true);
+  };
+
+  const handleSellToStore = async () => {
+    if (!sellHive) return;
+    if (sellType === "hive") {
+      await addHiveStock({
+        name: sellHive.name,
+        quantity: sellQuantity,
+        pricePerUnit: sellPrice,
+        status: "available",
+        notes: `من خلية: ${sellHive.name} - ${sellHive.location}`,
+      });
+      toast({ title: "تمت إضافة الخلية للمتجر ✅" });
+    } else {
+      await addHoneyStock({
+        type: `عسل ${sellHive.name}`,
+        quantity: sellQuantity,
+        unit: "كغ",
+        pricePerUnit: sellPrice,
+        status: "available",
+        notes: `من خلية: ${sellHive.name}`,
+      });
+      toast({ title: "تمت إضافة العسل للمتجر ✅" });
+    }
+    setSellOpen(false);
+    setSellHive(null);
   };
 
   return (
@@ -88,7 +136,18 @@ const HivesPage = () => {
       {/* Hives Grid */}
       <div className="grid gap-4 md:grid-cols-2">
         {hives?.map((hive) => (
-          <HiveCard key={hive.id} id={String(hive.id)} {...hive} onClick={() => openEdit(hive)} />
+          <div key={hive.id} className="relative">
+            <HiveCard id={String(hive.id)} {...hive} onClick={() => openEdit(hive)} />
+            <Button
+              variant="outline"
+              size="sm"
+              className="absolute left-3 top-3 gap-1 text-xs"
+              onClick={(e) => { e.stopPropagation(); openSell(hive); }}
+            >
+              <ShoppingCart className="w-3.5 h-3.5" />
+              بيع
+            </Button>
+          </div>
         ))}
         {hives?.length === 0 && (
           <p className="text-muted-foreground text-center col-span-2 py-8">
@@ -115,6 +174,52 @@ const HivesPage = () => {
         title="تعديل الخلية"
         submitLabel="حفظ التعديلات"
       />
+
+      {/* Sell to Store Dialog */}
+      <Dialog open={sellOpen} onOpenChange={(o) => { setSellOpen(o); if (!o) setSellHive(null); }}>
+        <DialogContent className="max-w-sm mx-auto">
+          <DialogHeader>
+            <DialogTitle>إضافة للمتجر - {sellHive?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div>
+              <Label>نوع البيع</Label>
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                <Button
+                  variant={sellType === "hive" ? "default" : "outline"}
+                  onClick={() => setSellType("hive")}
+                  className="w-full"
+                >
+                  بيع الخلية
+                </Button>
+                <Button
+                  variant={sellType === "honey" ? "default" : "outline"}
+                  onClick={() => setSellType("honey")}
+                  className="w-full"
+                >
+                  بيع العسل
+                </Button>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>{sellType === "hive" ? "عدد الخلايا" : "الكمية (كغ)"}</Label>
+                <Input type="number" min={1} value={sellQuantity} onChange={(e) => setSellQuantity(+e.target.value)} />
+              </div>
+              <div>
+                <Label>السعر للوحدة</Label>
+                <Input type="number" min={0} value={sellPrice} onChange={(e) => setSellPrice(+e.target.value)} />
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              الإجمالي: <span className="font-bold text-foreground">{sellQuantity * sellPrice} ر.س</span>
+            </p>
+            <Button className="w-full gradient-honey text-primary-foreground" onClick={handleSellToStore}>
+              إضافة للمتجر
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Add Button */}
       <Button
