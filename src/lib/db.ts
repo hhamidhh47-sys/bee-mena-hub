@@ -58,6 +58,16 @@ export interface Sale {
   notes?: string;
 }
 
+export interface UserProfile {
+  id?: number;
+  name: string;
+  title: string;
+  startYear: number;
+  phone?: string;
+  email?: string;
+  location?: string;
+}
+
 // Database
 const db = new Dexie("NahaliDB") as Dexie & {
   hives: EntityTable<Hive, "id">;
@@ -65,14 +75,16 @@ const db = new Dexie("NahaliDB") as Dexie & {
   inspections: EntityTable<Inspection, "id">;
   inventory: EntityTable<InventoryItem, "id">;
   sales: EntityTable<Sale, "id">;
+  profile: EntityTable<UserProfile, "id">;
 };
 
-db.version(1).stores({
+db.version(2).stores({
   hives: "++id, name, location, queenStatus, createdAt",
   tasks: "++id, date, type, completed, hiveId",
   inspections: "++id, hiveId, date",
   inventory: "++id, name, category",
   sales: "++id, date, customerName",
+  profile: "++id",
 });
 
 // Seed default data if empty
