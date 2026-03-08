@@ -5,7 +5,7 @@ export interface Hive {
   id?: number;
   name: string;
   location: string;
-  queenStatus: "healthy" | "weak" | "missing";
+  queenStatus: "mated" | "weak" | "virgin" | "cell" | "missing";
   lastInspection: string;
   honeyProduction: number;
   alerts?: number;
