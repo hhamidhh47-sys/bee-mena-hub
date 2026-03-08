@@ -20,6 +20,14 @@ import SeasonsPage from "./pages/SeasonsPage";
 import WeatherPage from "./pages/WeatherPage";
 import EducationPage from "./pages/EducationPage";
 import ExpertsPage from "./pages/ExpertsPage";
+import MapPage from "./pages/MapPage";
+import QRCodePage from "./pages/QRCodePage";
+import TreatmentsPage from "./pages/TreatmentsPage";
+import FeedingCalcPage from "./pages/FeedingCalcPage";
+import SmokerTimerPage from "./pages/SmokerTimerPage";
+import ExportPage from "./pages/ExportPage";
+import QueenLineagePage from "./pages/QueenLineagePage";
+import ROIPage from "./pages/ROIPage";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +64,14 @@ function ProtectedRoutes() {
       <Route path="/weather" element={<WeatherPage />} />
       <Route path="/education" element={<EducationPage />} />
       <Route path="/experts" element={<ExpertsPage />} />
+      <Route path="/map" element={<MapPage />} />
+      <Route path="/qrcode" element={<QRCodePage />} />
+      <Route path="/treatments" element={<TreatmentsPage />} />
+      <Route path="/feeding" element={<FeedingCalcPage />} />
+      <Route path="/smoker-timer" element={<SmokerTimerPage />} />
+      <Route path="/export" element={<ExportPage />} />
+      <Route path="/queens" element={<QueenLineagePage />} />
+      <Route path="/roi" element={<ROIPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

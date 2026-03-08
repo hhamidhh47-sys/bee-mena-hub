@@ -162,7 +162,7 @@ const db = new Dexie("NahaliDB") as Dexie & {
   profile: EntityTable<UserProfile, "id">;
 };
 
-db.version(7).stores({
+db.version(8).stores({
   authUsers: "++id, &username",
   hives: "++id, name, location, queenStatus, createdAt",
   tasks: "++id, date, type, completed, hiveId",
@@ -175,6 +175,8 @@ db.version(7).stores({
   invoices: "++id, customerId, customerName, status, date, invoiceNumber",
   payments: "++id, invoiceId, customerId, date",
   profile: "++id, userId",
+  treatments: "++id, hiveId, medication, date",
+  queens: "++id, hiveId, parentQueenId, status, breed",
 });
 
 // Seed default data if empty
