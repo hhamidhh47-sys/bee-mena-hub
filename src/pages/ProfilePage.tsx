@@ -252,7 +252,10 @@ const ProfilePage = () => {
       </div>
 
       {/* Logout */}
-      <button className="w-full mt-6 flex items-center justify-center gap-2 p-4 text-destructive hover:bg-destructive/10 rounded-xl transition-colors">
+      <button
+        onClick={logout}
+        className="w-full mt-6 flex items-center justify-center gap-2 p-4 text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
+      >
         <LogOut className="w-5 h-5" />
         <span className="font-medium">تسجيل الخروج</span>
       </button>
