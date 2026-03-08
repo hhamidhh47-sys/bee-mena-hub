@@ -5,7 +5,7 @@ export interface Hive {
   id?: number;
   name: string;
   location: string;
-  queenStatus: "healthy" | "weak" | "missing";
+  queenStatus: "mated" | "weak" | "virgin" | "cell" | "missing";
   lastInspection: string;
   honeyProduction: number;
   alerts?: number;
@@ -30,7 +30,7 @@ export interface Inspection {
   id?: number;
   hiveId: number;
   date: Date;
-  queenStatus: "healthy" | "weak" | "missing";
+  queenStatus: "mated" | "weak" | "virgin" | "cell" | "missing";
   beeCount: "low" | "medium" | "high";
   honeyProduction: number;
   diseases?: string;
@@ -95,7 +95,7 @@ export async function seedDatabase() {
       {
         name: "خلية الورد",
         location: "المزرعة الشمالية",
-        queenStatus: "healthy",
+        queenStatus: "mated",
         lastInspection: "قبل 3 أيام",
         honeyProduction: 12,
         createdAt: new Date(),
@@ -114,7 +114,7 @@ export async function seedDatabase() {
       {
         name: "خلية الزهور",
         location: "المزرعة الشرقية",
-        queenStatus: "healthy",
+        queenStatus: "mated",
         lastInspection: "اليوم",
         honeyProduction: 15,
         createdAt: new Date(),
@@ -123,7 +123,7 @@ export async function seedDatabase() {
       {
         name: "خلية النعناع",
         location: "المزرعة الغربية",
-        queenStatus: "missing",
+        queenStatus: "virgin",
         lastInspection: "قبل أسبوعين",
         honeyProduction: 3,
         alerts: 1,
@@ -133,7 +133,7 @@ export async function seedDatabase() {
       {
         name: "خلية الليمون",
         location: "المزرعة الشمالية",
-        queenStatus: "healthy",
+        queenStatus: "mated",
         lastInspection: "قبل يومين",
         honeyProduction: 10,
         createdAt: new Date(),
@@ -142,7 +142,7 @@ export async function seedDatabase() {
       {
         name: "خلية البرتقال",
         location: "المزرعة الجنوبية",
-        queenStatus: "healthy",
+        queenStatus: "cell",
         lastInspection: "قبل 4 أيام",
         honeyProduction: 14,
         createdAt: new Date(),

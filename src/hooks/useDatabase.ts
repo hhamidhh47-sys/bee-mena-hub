@@ -31,7 +31,7 @@ export function useTasks(date?: string) {
 export function useHiveStats() {
   return useLiveQuery(async () => {
     const all = await db.hives.toArray();
-    const healthy = all.filter((h) => h.queenStatus === "healthy").length;
+    const healthy = all.filter((h) => h.queenStatus === "mated").length;
     const withAlerts = all.filter((h) => h.alerts && h.alerts > 0).length;
     const totalProduction = all.reduce((s, h) => s + h.honeyProduction, 0);
     return {

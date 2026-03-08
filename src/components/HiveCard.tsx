@@ -5,7 +5,7 @@ interface HiveCardProps {
   id: string;
   name: string;
   location: string;
-  queenStatus: "healthy" | "weak" | "missing";
+  queenStatus: "mated" | "weak" | "virgin" | "cell" | "missing";
   lastInspection: string;
   honeyProduction: number;
   alerts?: number;
@@ -13,15 +13,25 @@ interface HiveCardProps {
 }
 
 const queenStatusConfig = {
-  healthy: {
+  mated: {
     icon: Crown,
-    label: "ملكة صحية",
+    label: "ملكة ملقحة",
     color: "text-nature bg-nature/10",
   },
   weak: {
     icon: AlertTriangle,
     label: "ملكة ضعيفة",
     color: "text-primary bg-primary/10",
+  },
+  virgin: {
+    icon: Heart,
+    label: "ملكة عذراء",
+    color: "text-[hsl(280,60%,50%)] bg-[hsl(280,60%,50%)]/10",
+  },
+  cell: {
+    icon: Crown,
+    label: "بيت ملكي",
+    color: "text-[hsl(200,60%,45%)] bg-[hsl(200,60%,45%)]/10",
   },
   missing: {
     icon: AlertTriangle,

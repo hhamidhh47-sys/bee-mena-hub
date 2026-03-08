@@ -19,12 +19,12 @@ const HivesPage = () => {
   const [form, setForm] = useState({
     name: "",
     location: "",
-    queenStatus: "healthy" as "healthy" | "weak" | "missing",
+    queenStatus: "mated" as "mated" | "weak" | "virgin" | "cell" | "missing",
     honeyProduction: 0,
   });
 
   const resetForm = () => {
-    setForm({ name: "", location: "", queenStatus: "healthy", honeyProduction: 0 });
+    setForm({ name: "", location: "", queenStatus: "mated", honeyProduction: 0 });
   };
 
   const handleAdd = async () => {
@@ -131,9 +131,11 @@ const HivesPage = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="healthy">صحية</SelectItem>
-                  <SelectItem value="weak">ضعيفة</SelectItem>
-                  <SelectItem value="missing">غائبة</SelectItem>
+                  <SelectItem value="mated">ملكة ملقحة</SelectItem>
+                  <SelectItem value="weak">ملكة ضعيفة</SelectItem>
+                  <SelectItem value="virgin">ملكة عذراء</SelectItem>
+                  <SelectItem value="cell">بيت ملكي</SelectItem>
+                  <SelectItem value="missing">بدون ملكة</SelectItem>
                 </SelectContent>
               </Select>
             </div>
