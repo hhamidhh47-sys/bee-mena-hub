@@ -4,12 +4,14 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import beeLogo from "@/assets/bee-logo.png";
 import { useHiveStats } from "@/hooks/useDatabase";
+import { useTheme } from "@/hooks/useTheme";
 import { exportDatabase, downloadBackup, importDatabase } from "@/lib/backup";
 import { useRef } from "react";
 import { toast } from "@/hooks/use-toast";
 
 const ProfilePage = () => {
   const stats = useHiveStats();
+  const { theme, toggleTheme } = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleExport = async () => {
@@ -104,7 +106,7 @@ const ProfilePage = () => {
               <p className="font-medium">{item.label}</p>
               {item.value && <p className="text-sm text-muted-foreground">{item.value}</p>}
             </div>
-            {item.toggle ? <Switch /> : <ChevronLeft className="w-5 h-5 text-muted-foreground" />}
+            {item.toggle ? <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} /> : <ChevronLeft className="w-5 h-5 text-muted-foreground" />}
           </div>
         ))}
       </div>
