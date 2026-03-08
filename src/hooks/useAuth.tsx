@@ -1,10 +1,13 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { type AuthUser } from "@/lib/db";
 import { getSessionUser, saveSession, clearSession, loginUser, registerUser } from "@/lib/auth";
+import { isAuthEnabled, setAuthEnabled } from "@/lib/authConfig";
 
 interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
+  authEnabled: boolean;
+  setAuthRequired: (enabled: boolean) => void;
   login: (username: string, password: string) => Promise<void>;
   register: (username: string, password: string, displayName: string) => Promise<void>;
   logout: () => void;
@@ -15,13 +18,19 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authEnabled, setAuthEnabledState] = useState(() => isAuthEnabled());
 
   useEffect(() => {
-    getSessionUser().then((u) => {
-      setUser(u);
+    if (authEnabled) {
+      getSessionUser().then((u) => {
+        setUser(u);
+        setLoading(false);
+      });
+    } else {
+      setUser(null);
       setLoading(false);
-    });
-  }, []);
+    }
+  }, [authEnabled]);
 
   const login = async (username: string, password: string) => {
     const u = await loginUser(username, password);
@@ -40,8 +49,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const setAuthRequired = useCallback((enabled: boolean) => {
+    setAuthEnabled(enabled);
+    setAuthEnabledState(enabled);
+    if (!enabled) {
+      clearSession();
+      setUser(null);
+    }
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, authEnabled, setAuthRequired, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
