@@ -3,7 +3,7 @@ import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
 import { MapPin, Plus, Navigation, Trash2 } from "lucide-react";
 import { useHives } from "@/hooks/useDatabase";
 import { db } from "@/lib/db";
@@ -136,7 +136,13 @@ const MapPage = () => {
         </Button>
       </div>
 
-      <p className="text-sm text-muted-foreground mb-4 text-center">اضغط على الخريطة لإضافة موقع منحل جديد</p>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-muted-foreground">اضغط على الخريطة أو استخدم الزر لإضافة موقع</p>
+        <Button onClick={() => { setClickedLatLng({ lat: 24.7136, lng: 46.6753 }); setDialogOpen(true); }} size="sm" className="gradient-honey text-primary-foreground">
+          <Plus className="w-4 h-4 ml-1" />
+          إضافة منحل
+        </Button>
+      </div>
 
       {/* Locations List */}
       <section>
@@ -165,33 +171,34 @@ const MapPage = () => {
         </div>
       </section>
 
-      {/* Add Location Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>إضافة موقع منحل</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
-            {clickedLatLng && (
-              <p className="text-sm text-muted-foreground">
-                الإحداثيات: {clickedLatLng.lat.toFixed(5)}, {clickedLatLng.lng.toFixed(5)}
-              </p>
-            )}
-            <div>
-              <Label>اسم المنحل *</Label>
-              <Input
-                value={newName}
-                onChange={e => setNewName(e.target.value)}
-                placeholder="مثال: المزرعة الشمالية"
-              />
+      {/* Add Location Dialog - using high z-index to appear above Leaflet */}
+      {dialogOpen && (
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/60" onClick={() => setDialogOpen(false)} />
+          <div className="relative z-[2001] bg-background rounded-xl p-6 w-full max-w-sm mx-4 shadow-2xl border border-border">
+            <h3 className="text-lg font-bold mb-4 text-right">إضافة موقع منحل</h3>
+            <div className="space-y-4">
+              {clickedLatLng && (
+                <p className="text-sm text-muted-foreground">
+                  الإحداثيات: {clickedLatLng.lat.toFixed(5)}, {clickedLatLng.lng.toFixed(5)}
+                </p>
+              )}
+              <div>
+                <Label>اسم المنحل *</Label>
+                <Input
+                  value={newName}
+                  onChange={e => setNewName(e.target.value)}
+                  placeholder="مثال: المزرعة الشمالية"
+                />
+              </div>
+              <Button onClick={handleAddLocation} className="w-full gradient-honey text-primary-foreground">
+                <Plus className="w-4 h-4 ml-2" />
+                إضافة الموقع
+              </Button>
             </div>
-            <Button onClick={handleAddLocation} className="w-full gradient-honey text-primary-foreground">
-              <Plus className="w-4 h-4 ml-2" />
-              إضافة الموقع
-            </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </AppLayout>
   );
 };
