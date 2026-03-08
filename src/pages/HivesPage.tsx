@@ -22,8 +22,14 @@ const HivesPage = () => {
   const [addOpen, setAddOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editingHive, setEditingHive] = useState<Hive | null>(null);
+  const [sellOpen, setSellOpen] = useState(false);
+  const [sellHive, setSellHive] = useState<Hive | null>(null);
+  const [sellType, setSellType] = useState<"hive" | "honey">("hive");
+  const [sellPrice, setSellPrice] = useState(0);
+  const [sellQuantity, setSellQuantity] = useState(1);
   const hives = useHives(searchQuery);
   const stats = useHiveStats();
+  const navigate = useNavigate();
 
   const handleAdd = async (data: any) => {
     await addHive({
@@ -57,6 +63,40 @@ const HivesPage = () => {
   const openEdit = (hive: Hive) => {
     setEditingHive(hive);
     setEditOpen(true);
+  };
+
+  const openSell = (hive: Hive) => {
+    setSellHive(hive);
+    setSellPrice(0);
+    setSellQuantity(1);
+    setSellType("hive");
+    setSellOpen(true);
+  };
+
+  const handleSellToStore = async () => {
+    if (!sellHive) return;
+    if (sellType === "hive") {
+      await addHiveStock({
+        name: sellHive.name,
+        quantity: sellQuantity,
+        pricePerUnit: sellPrice,
+        status: "available",
+        notes: `من خلية: ${sellHive.name} - ${sellHive.location}`,
+      });
+      toast({ title: "تمت إضافة الخلية للمتجر ✅" });
+    } else {
+      await addHoneyStock({
+        type: `عسل ${sellHive.name}`,
+        quantity: sellQuantity,
+        unit: "كغ",
+        pricePerUnit: sellPrice,
+        status: "available",
+        notes: `من خلية: ${sellHive.name}`,
+      });
+      toast({ title: "تمت إضافة العسل للمتجر ✅" });
+    }
+    setSellOpen(false);
+    setSellHive(null);
   };
 
   return (
