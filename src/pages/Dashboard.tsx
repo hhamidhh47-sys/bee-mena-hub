@@ -8,14 +8,19 @@ import { Link, useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-honey.jpg";
 import { useHives, useHiveStats, useTasks, useProfile } from "@/hooks/useDatabase";
 import { useState } from "react";
+import { generateHiveAlerts } from "@/lib/smartSuggestions";
 
 const Dashboard = () => {
   const [fabOpen, setFabOpen] = useState(false);
   const navigate = useNavigate();
-  const hives = useHives();
+  const hives = useHives() ?? [];
   const hiveStats = useHiveStats();
   const tasks = useTasks(new Date().toISOString().split("T")[0]);
   const profile = useProfile();
+
+  const alerts = generateHiveAlerts(hives);
+  const criticalAlerts = alerts.filter(a => a.severity === "critical");
+  const warningAlerts = alerts.filter(a => a.severity === "warning");
 
   const stats = [
     {
@@ -34,7 +39,7 @@ const Dashboard = () => {
     },
     {
       title: "تنبيهات",
-      value: hiveStats?.withAlerts ?? 0,
+      value: criticalAlerts.length + warningAlerts.length,
       icon: <AlertTriangle className="w-5 h-5" />,
       variant: "warm" as const,
     },
@@ -46,8 +51,14 @@ const Dashboard = () => {
     },
   ];
 
-  const recentHives = (hives ?? []).slice(0, 2);
+  const recentHives = hives.slice(0, 2);
   const upcomingTasks = (tasks ?? []).filter((t) => !t.completed).slice(0, 3);
+
+  const severityStyles: Record<string, string> = {
+    critical: "border-destructive/60 bg-destructive/10",
+    warning: "border-yellow-500/60 bg-yellow-500/10",
+    info: "border-primary/40 bg-primary/5",
+  };
 
   return (
     <AppLayout title="نحّالي">
@@ -59,11 +70,42 @@ const Dashboard = () => {
           <div className="absolute bottom-4 right-4 left-4">
             <h2 className="text-2xl font-bold text-foreground mb-1">صباح الخير، {profile?.name || "نحّال"}! 🐝</h2>
             <p className="text-muted-foreground">
-              لديك {upcomingTasks.length} مهام اليوم و {hiveStats?.withAlerts ?? 0} تنبيهات جديدة
+              لديك {upcomingTasks.length} مهام اليوم و {criticalAlerts.length + warningAlerts.length} تنبيهات
             </p>
           </div>
         </div>
       </section>
+
+      {/* Critical Alerts */}
+      {(criticalAlerts.length > 0 || warningAlerts.length > 0) && (
+        <section className="mb-6">
+          <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-destructive" />
+            تنبيهات مهمة
+          </h3>
+          <div className="space-y-2">
+            {[...criticalAlerts, ...warningAlerts].slice(0, 4).map((alert) => (
+              <div
+                key={alert.id}
+                className={`p-3 rounded-xl border ${severityStyles[alert.severity]} transition-all`}
+              >
+                <div className="flex items-start gap-2">
+                  <span className="text-lg">{alert.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm">{alert.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{alert.description}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {(criticalAlerts.length + warningAlerts.length) > 4 && (
+              <Link to="/schedule" className="block text-center text-sm text-primary hover:underline py-1">
+                عرض كل التنبيهات ({criticalAlerts.length + warningAlerts.length})
+              </Link>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Stats Grid */}
       <section className="mb-8">

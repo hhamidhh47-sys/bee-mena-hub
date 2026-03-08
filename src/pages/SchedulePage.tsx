@@ -9,20 +9,26 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, ChevronRight, ChevronLeft } from "lucide-react";
+import { Plus, ChevronRight, ChevronLeft, Lightbulb, Sparkles } from "lucide-react";
 import { useState } from "react";
-import { useTasks, toggleTask, addTask } from "@/hooks/useDatabase";
+import { useTasks, toggleTask, addTask, useHives } from "@/hooks/useDatabase";
 import { useToast } from "@/hooks/use-toast";
+import { generateSmartSuggestions, type SmartSuggestion } from "@/lib/smartSuggestions";
 
 const SchedulePage = () => {
   const today = new Date();
   const [selectedDay, setSelectedDay] = useState(today.getDate());
   const [open, setOpen] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const { toast } = useToast();
 
   const selectedDate = new Date(today.getFullYear(), today.getMonth(), selectedDay);
   const dateStr = selectedDate.toISOString().split("T")[0];
   const tasks = useTasks(dateStr);
+  const allTasks = useTasks() ?? [];
+  const hives = useHives() ?? [];
+
+  const suggestions = generateSmartSuggestions(hives, allTasks);
 
   const [form, setForm] = useState({
     title: "",
@@ -39,6 +45,19 @@ const SchedulePage = () => {
     toast({ title: "تمت الإضافة", description: "تمت إضافة المهمة بنجاح" });
     resetForm();
     setOpen(false);
+  };
+
+  const handleAddSuggestion = async (s: SmartSuggestion) => {
+    await addTask({
+      title: s.title,
+      description: s.description,
+      time: "",
+      date: dateStr,
+      type: s.type,
+      completed: false,
+      hiveId: s.hiveId,
+    });
+    toast({ title: "تمت الإضافة ✅", description: s.title });
   };
 
   // Generate week days around today
@@ -60,6 +79,18 @@ const SchedulePage = () => {
     harvest: "حصاد",
     medication: "علاج",
     other: "أخرى",
+  };
+
+  const priorityColors: Record<string, string> = {
+    high: "border-destructive/50 bg-destructive/5",
+    medium: "border-yellow-500/50 bg-yellow-500/5",
+    low: "border-primary/30 bg-primary/5",
+  };
+
+  const priorityLabels: Record<string, string> = {
+    high: "عاجل",
+    medium: "متوسط",
+    low: "منخفض",
   };
 
   const handleToggle = async (taskId: number, completed: boolean) => {
@@ -96,6 +127,65 @@ const SchedulePage = () => {
           </button>
         ))}
       </div>
+
+      {/* Smart Suggestions */}
+      {suggestions.length > 0 && (
+        <section className="mb-6">
+          <button
+            onClick={() => setShowSuggestions(!showSuggestions)}
+            className="flex items-center gap-2 mb-3 w-full"
+          >
+            <div className="flex items-center gap-2 flex-1">
+              <Sparkles className="w-5 h-5 text-primary" />
+              <h3 className="text-lg font-bold">اقتراحات ذكية</h3>
+              <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                {suggestions.length}
+              </span>
+            </div>
+            <ChevronLeft className={`w-4 h-4 text-muted-foreground transition-transform ${showSuggestions ? "rotate-90" : ""}`} />
+          </button>
+
+          {showSuggestions && (
+            <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+              {suggestions.map((s) => (
+                <div
+                  key={s.id}
+                  className={`p-3 rounded-xl border ${priorityColors[s.priority]} transition-all`}
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-xl mt-0.5">{s.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-semibold text-sm">{s.title}</p>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                          s.priority === "high" ? "bg-destructive/20 text-destructive" :
+                          s.priority === "medium" ? "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400" :
+                          "bg-primary/20 text-primary"
+                        }`}>
+                          {priorityLabels[s.priority]}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{s.description}</p>
+                      {s.hiveName && (
+                        <p className="text-[10px] text-muted-foreground mt-1">🐝 {s.hiveName}</p>
+                      )}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="shrink-0 h-8 text-xs"
+                      onClick={() => handleAddSuggestion(s)}
+                    >
+                      <Plus className="w-3 h-3 ml-1" />
+                      إضافة
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Today's Tasks */}
       <section className="mb-8">
