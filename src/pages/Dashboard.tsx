@@ -12,6 +12,7 @@ const Dashboard = () => {
   const hives = useHives();
   const hiveStats = useHiveStats();
   const tasks = useTasks(new Date().toISOString().split("T")[0]);
+  const profile = useProfile();
 
   const stats = [
     {
