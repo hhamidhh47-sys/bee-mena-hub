@@ -30,7 +30,7 @@ export interface Inspection {
   id?: number;
   hiveId: number;
   date: Date;
-  queenStatus: "healthy" | "weak" | "missing";
+  queenStatus: "mated" | "weak" | "virgin" | "cell" | "missing";
   beeCount: "low" | "medium" | "high";
   honeyProduction: number;
   diseases?: string;
