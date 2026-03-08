@@ -1,10 +1,12 @@
 import { useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -21,13 +23,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Plus, Search, Package, Droplets, Users, Pencil, Trash2 } from "lucide-react";
-import { useHiveStock, useHoneyStock, useCustomers, addHiveStock, updateHiveStock, deleteHiveStock, addHoneyStock, updateHoneyStock, deleteHoneyStock, addCustomer, updateCustomer, deleteCustomer } from "@/hooks/useDatabase";
+import { useHives, useHiveStock, useHoneyStock, useCustomers, addHiveStock, updateHiveStock, deleteHiveStock, addHoneyStock, updateHoneyStock, deleteHoneyStock, addCustomer, updateCustomer, deleteCustomer } from "@/hooks/useDatabase";
 import type { HiveStock, HoneyStock, Customer } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
 
 // --- Hive Stock Tab ---
 const HiveStockTab = () => {
   const items = useHiveStock();
+  const hives = useHives();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -99,16 +102,42 @@ const HiveStockTab = () => {
               <DialogTitle>{editItem ? "تعديل خلية" : "إضافة خلية للبيع"}</DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
-              <Input placeholder="اسم الخلية / النوع" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-              <div className="grid grid-cols-2 gap-3">
-                <Input type="number" placeholder="الكمية" value={form.quantity} onChange={e => setForm(f => ({ ...f, quantity: +e.target.value }))} />
-                <Input type="number" placeholder="السعر للوحدة" value={form.pricePerUnit} onChange={e => setForm(f => ({ ...f, pricePerUnit: +e.target.value }))} />
+              <div>
+                <Label>اختر خلية</Label>
+                <Select value={form.name} onValueChange={(v) => setForm(f => ({ ...f, name: v }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="اختر من خلاياك..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {hives?.map(h => (
+                      <SelectItem key={h.id} value={h.name}>
+                        {h.name} - {h.location}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <select className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm" value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as HiveStock["status"] }))}>
-                <option value="available">متاح</option>
-                <option value="reserved">محجوز</option>
-                <option value="sold">مباع</option>
-              </select>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>الكمية</Label>
+                  <Input type="number" placeholder="الكمية" value={form.quantity} onChange={e => setForm(f => ({ ...f, quantity: +e.target.value }))} />
+                </div>
+                <div>
+                  <Label>السعر للوحدة</Label>
+                  <Input type="number" placeholder="السعر للوحدة" value={form.pricePerUnit} onChange={e => setForm(f => ({ ...f, pricePerUnit: +e.target.value }))} />
+                </div>
+              </div>
+              <div>
+                <Label>الحالة</Label>
+                <Select value={form.status} onValueChange={(v) => setForm(f => ({ ...f, status: v as HiveStock["status"] }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="available">متاح</SelectItem>
+                    <SelectItem value="reserved">محجوز</SelectItem>
+                    <SelectItem value="sold">مباع</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Input placeholder="ملاحظات (اختياري)" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
               <Button className="w-full" onClick={handleSave}>حفظ</Button>
             </div>
@@ -156,6 +185,7 @@ const HiveStockTab = () => {
 // --- Honey Stock Tab ---
 const HoneyStockTab = () => {
   const items = useHoneyStock();
+  const hives = useHives();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -218,22 +248,58 @@ const HoneyStockTab = () => {
               <DialogTitle>{editItem ? "تعديل عسل" : "إضافة عسل للبيع"}</DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
-              <Input placeholder="نوع العسل (سدر، زهور، ...)" value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))} />
-              <div className="grid grid-cols-3 gap-3">
-                <Input type="number" placeholder="الكمية" value={form.quantity} onChange={e => setForm(f => ({ ...f, quantity: +e.target.value }))} />
-                <select className="h-10 rounded-md border border-input bg-background px-3 text-sm" value={form.unit} onChange={e => setForm(f => ({ ...f, unit: e.target.value }))}>
-                  <option value="كغ">كغ</option>
-                  <option value="غرام">غرام</option>
-                  <option value="لتر">لتر</option>
-                  <option value="برطمان">برطمان</option>
-                </select>
-                <Input type="number" placeholder="السعر" value={form.pricePerUnit} onChange={e => setForm(f => ({ ...f, pricePerUnit: +e.target.value }))} />
+              <div>
+                <Label>مصدر العسل (خلية)</Label>
+                <Select value={form.type} onValueChange={(v) => setForm(f => ({ ...f, type: v }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="اختر الخلية المصدر..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {hives?.map(h => (
+                      <SelectItem key={h.id} value={`عسل ${h.name}`}>
+                        {h.name} - {h.location} ({h.honeyProduction} كغ)
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="سدر">سدر</SelectItem>
+                    <SelectItem value="زهور">زهور</SelectItem>
+                    <SelectItem value="طلح">طلح</SelectItem>
+                    <SelectItem value="أخرى">أخرى</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <select className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm" value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as HoneyStock["status"] }))}>
-                <option value="available">متاح</option>
-                <option value="reserved">محجوز</option>
-                <option value="sold">مباع</option>
-              </select>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <Label>الكمية</Label>
+                  <Input type="number" placeholder="الكمية" value={form.quantity} onChange={e => setForm(f => ({ ...f, quantity: +e.target.value }))} />
+                </div>
+                <div>
+                  <Label>الوحدة</Label>
+                  <Select value={form.unit} onValueChange={(v) => setForm(f => ({ ...f, unit: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="كغ">كغ</SelectItem>
+                      <SelectItem value="غرام">غرام</SelectItem>
+                      <SelectItem value="لتر">لتر</SelectItem>
+                      <SelectItem value="برطمان">برطمان</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>السعر</Label>
+                  <Input type="number" placeholder="السعر" value={form.pricePerUnit} onChange={e => setForm(f => ({ ...f, pricePerUnit: +e.target.value }))} />
+                </div>
+              </div>
+              <div>
+                <Label>الحالة</Label>
+                <Select value={form.status} onValueChange={(v) => setForm(f => ({ ...f, status: v as HoneyStock["status"] }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="available">متاح</SelectItem>
+                    <SelectItem value="reserved">محجوز</SelectItem>
+                    <SelectItem value="sold">مباع</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Input placeholder="ملاحظات (اختياري)" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
               <Button className="w-full" onClick={handleSave}>حفظ</Button>
             </div>

@@ -2,12 +2,20 @@ import AppLayout from "@/components/AppLayout";
 import HiveCard from "@/components/HiveCard";
 import HiveFormDialog from "@/components/HiveFormDialog";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Search, Filter, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { useHives, useHiveStats, addHive, updateHive } from "@/hooks/useDatabase";
+import { useHives, useHiveStats, addHive, updateHive, addHiveStock, addHoneyStock } from "@/hooks/useDatabase";
 import { toast } from "@/hooks/use-toast";
 import type { Hive } from "@/lib/db";
+import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 const HivesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
