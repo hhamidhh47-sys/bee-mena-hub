@@ -67,3 +67,15 @@ export async function toggleTask(id: number, completed: boolean) {
 export async function deleteTask(id: number) {
   return db.tasks.delete(id);
 }
+
+// Profile
+export function useProfile() {
+  return useLiveQuery(() => db.profile.toCollection().first());
+}
+
+export async function updateProfile(changes: Partial<UserProfile>) {
+  const profile = await db.profile.toCollection().first();
+  if (profile?.id) {
+    return db.profile.update(profile.id, changes);
+  }
+}
