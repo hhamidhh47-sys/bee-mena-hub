@@ -27,7 +27,7 @@ const HivesPage = () => {
   });
 
   const resetForm = () => {
-    setForm({ name: "", location: "", queenStatus: "mated", honeyProduction: 0 });
+    setForm({ name: "", code: "", location: "", queenStatus: "mated", honeyProduction: 0, frameCount: 10, notes: "" });
   };
 
   const handleAdd = async () => {
