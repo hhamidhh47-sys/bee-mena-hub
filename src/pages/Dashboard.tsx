@@ -6,7 +6,7 @@ import { Grid3X3, Droplets, AlertTriangle, TrendingUp, Plus, ChevronLeft } from 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-honey.jpg";
-import { useHives, useHiveStats, useTasks } from "@/hooks/useDatabase";
+import { useHives, useHiveStats, useTasks, useProfile } from "@/hooks/useDatabase";
 
 const Dashboard = () => {
   const hives = useHives();
