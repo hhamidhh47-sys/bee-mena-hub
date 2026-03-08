@@ -1,17 +1,45 @@
 import AppLayout from "@/components/AppLayout";
 import TaskCard from "@/components/TaskCard";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Plus, ChevronRight, ChevronLeft } from "lucide-react";
 import { useState } from "react";
-import { useTasks, toggleTask } from "@/hooks/useDatabase";
+import { useTasks, toggleTask, addTask } from "@/hooks/useDatabase";
+import { useToast } from "@/hooks/use-toast";
 
 const SchedulePage = () => {
   const today = new Date();
   const [selectedDay, setSelectedDay] = useState(today.getDate());
+  const [open, setOpen] = useState(false);
+  const { toast } = useToast();
 
   const selectedDate = new Date(today.getFullYear(), today.getMonth(), selectedDay);
   const dateStr = selectedDate.toISOString().split("T")[0];
   const tasks = useTasks(dateStr);
+
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    time: "",
+    type: "inspection" as "inspection" | "feeding" | "harvest" | "medication" | "other",
+  });
+
+  const resetForm = () => setForm({ title: "", description: "", time: "", type: "inspection" });
+
+  const handleAdd = async () => {
+    if (!form.title) return;
+    await addTask({ ...form, date: dateStr, completed: false });
+    toast({ title: "تمت الإضافة", description: "تمت إضافة المهمة بنجاح" });
+    resetForm();
+    setOpen(false);
+  };
 
   // Generate week days around today
   const days = Array.from({ length: 7 }, (_, i) => {
@@ -25,6 +53,14 @@ const SchedulePage = () => {
     "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
     "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر",
   ];
+
+  const typeLabels: Record<string, string> = {
+    inspection: "فحص",
+    feeding: "تغذية",
+    harvest: "حصاد",
+    medication: "علاج",
+    other: "أخرى",
+  };
 
   const handleToggle = async (taskId: number, completed: boolean) => {
     await toggleTask(taskId, !completed);
@@ -87,9 +123,33 @@ const SchedulePage = () => {
       </section>
 
       {/* Add Button */}
-      <Button className="fixed left-4 bottom-24 w-14 h-14 rounded-full shadow-honey gradient-honey text-primary-foreground">
-        <Plus className="w-6 h-6" />
-      </Button>
+      <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
+        <DialogTrigger asChild>
+          <Button className="fixed left-4 bottom-24 w-14 h-14 rounded-full shadow-honey gradient-honey text-primary-foreground z-50">
+            <Plus className="w-6 h-6" />
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>إضافة مهمة جديدة</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input placeholder="عنوان المهمة" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
+            <Input placeholder="وصف المهمة (اختياري)" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+            <Input placeholder="الوقت (مثال: 10:00 صباحاً)" value={form.time} onChange={e => setForm(f => ({ ...f, time: e.target.value }))} />
+            <select
+              className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+              value={form.type}
+              onChange={e => setForm(f => ({ ...f, type: e.target.value as typeof form.type }))}
+            >
+              {Object.entries(typeLabels).map(([val, label]) => (
+                <option key={val} value={val}>{label}</option>
+              ))}
+            </select>
+            <Button className="w-full" onClick={handleAdd}>إضافة المهمة</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };
