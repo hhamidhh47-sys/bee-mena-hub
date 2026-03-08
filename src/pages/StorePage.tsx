@@ -38,7 +38,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, Package, Droplets, Users, Pencil, Trash2, Check, ChevronsUpDown, Receipt, AlertCircle, DollarSign, Eye, X, Phone, MapPin } from "lucide-react";
+import { Plus, Search, Package, Droplets, Users, Pencil, Trash2, Check, ChevronsUpDown, Receipt, AlertCircle, DollarSign, Eye, X, Phone, MapPin, Printer } from "lucide-react";
 import { useHives, useHiveStock, useHoneyStock, useCustomers, addHiveStock, updateHiveStock, deleteHiveStock, addHoneyStock, updateHoneyStock, deleteHoneyStock, addCustomer, updateCustomer, deleteCustomer, useInvoices, addInvoice, updateInvoice, deleteInvoice, generateInvoiceNumber, useCustomerDebts, addPayment, usePayments } from "@/hooks/useDatabase";
 import type { HiveStock, HoneyStock, Customer, InvoiceItem } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
