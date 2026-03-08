@@ -195,6 +195,18 @@ export async function seedDatabase() {
       },
     ]);
   }
+
+  const profileCount = await db.profile.count();
+  if (profileCount === 0) {
+    await db.profile.add({
+      name: "أحمد محمد",
+      title: "نحّال محترف",
+      startYear: 2018,
+      phone: "",
+      email: "",
+      location: "الرياض",
+    });
+  }
 }
 
 export { db };
