@@ -58,6 +58,39 @@ export interface Sale {
   notes?: string;
 }
 
+export interface HiveStock {
+  id?: number;
+  name: string;
+  quantity: number;
+  pricePerUnit: number;
+  status: "available" | "sold" | "reserved";
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface HoneyStock {
+  id?: number;
+  type: string;
+  quantity: number;
+  unit: string;
+  pricePerUnit: number;
+  status: "available" | "sold" | "reserved";
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Customer {
+  id?: number;
+  name: string;
+  phone?: string;
+  location?: string;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface UserProfile {
   id?: number;
   name: string;
