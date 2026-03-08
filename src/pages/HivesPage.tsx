@@ -1,60 +1,54 @@
 import AppLayout from "@/components/AppLayout";
 import HiveCard from "@/components/HiveCard";
+import HiveFormDialog from "@/components/HiveFormDialog";
 import { Button } from "@/components/ui/button";
 import { Plus, Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
-import { useHives, useHiveStats, addHive } from "@/hooks/useDatabase";
+import { useHives, useHiveStats, addHive, updateHive } from "@/hooks/useDatabase";
 import { toast } from "@/hooks/use-toast";
+import type { Hive } from "@/lib/db";
 
 const HivesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [addOpen, setAddOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingHive, setEditingHive] = useState<Hive | null>(null);
   const hives = useHives(searchQuery);
   const stats = useHiveStats();
 
-  const [form, setForm] = useState({
-    name: "",
-    code: "",
-    location: "",
-    queenStatus: "mated" as "mated" | "weak" | "virgin" | "cell" | "missing",
-    honeyProduction: 0,
-    frameCount: 10,
-    notes: "",
-  });
-
-  const resetForm = () => {
-    setForm({ name: "", code: "", location: "", queenStatus: "mated", honeyProduction: 0, frameCount: 10, notes: "" });
+  const handleAdd = async (data: any) => {
+    await addHive({
+      name: data.name,
+      code: data.code.trim() || undefined,
+      location: data.location,
+      queenStatus: data.queenStatus,
+      lastInspection: "جديدة",
+      honeyProduction: Math.max(0, data.honeyProduction),
+      frameCount: Math.max(0, data.frameCount),
+      notes: data.notes.trim() || undefined,
+    });
+    toast({ title: "تمت إضافة الخلية بنجاح ✅" });
   };
 
-  const handleAdd = async () => {
-    const name = form.name.trim().slice(0, 100);
-    const location = form.location.trim().slice(0, 100);
-    if (!name) {
-      toast({ title: "اسم الخلية مطلوب", variant: "destructive" });
-      return;
-    }
-    if (!location) {
-      toast({ title: "الموقع مطلوب", variant: "destructive" });
-      return;
-    }
-    await addHive({
-      name,
-      code: form.code.trim() || undefined,
-      location,
-      queenStatus: form.queenStatus,
-      lastInspection: "جديدة",
-      honeyProduction: Math.max(0, form.honeyProduction),
-      frameCount: Math.max(0, form.frameCount),
-      notes: form.notes.trim() || undefined,
+  const handleEdit = async (data: any) => {
+    if (!editingHive?.id) return;
+    await updateHive(editingHive.id, {
+      name: data.name,
+      code: data.code.trim() || undefined,
+      location: data.location,
+      queenStatus: data.queenStatus,
+      honeyProduction: Math.max(0, data.honeyProduction),
+      frameCount: Math.max(0, data.frameCount),
+      notes: data.notes.trim() || undefined,
     });
-    resetForm();
-    setAddOpen(false);
-    toast({ title: "تمت إضافة الخلية بنجاح ✅" });
+    setEditingHive(null);
+    toast({ title: "تم تعديل الخلية بنجاح ✅" });
+  };
+
+  const openEdit = (hive: Hive) => {
+    setEditingHive(hive);
+    setEditOpen(true);
   };
 
   return (
@@ -94,7 +88,7 @@ const HivesPage = () => {
       {/* Hives Grid */}
       <div className="grid gap-4 md:grid-cols-2">
         {hives?.map((hive) => (
-          <HiveCard key={hive.id} id={String(hive.id)} {...hive} />
+          <HiveCard key={hive.id} id={String(hive.id)} {...hive} onClick={() => openEdit(hive)} />
         ))}
         {hives?.length === 0 && (
           <p className="text-muted-foreground text-center col-span-2 py-8">
@@ -104,98 +98,27 @@ const HivesPage = () => {
       </div>
 
       {/* Add Dialog */}
-      <Dialog open={addOpen} onOpenChange={setAddOpen}>
-        <DialogContent className="max-w-sm mx-auto">
-          <DialogHeader>
-            <DialogTitle>إضافة خلية جديدة</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-2 max-h-[70vh] overflow-y-auto">
-            <div>
-              <Label>اسم الخلية *</Label>
-              <Input
-                value={form.name}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                maxLength={100}
-                placeholder="مثال: خلية الورد"
-              />
-            </div>
-            <div>
-              <Label>كود الخلية</Label>
-              <Input
-                value={form.code}
-                onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
-                maxLength={50}
-                placeholder="مثال: H-001"
-              />
-            </div>
-            <div>
-              <Label>الموقع *</Label>
-              <Input
-                value={form.location}
-                onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
-                maxLength={100}
-                placeholder="مثال: المزرعة الشمالية"
-              />
-            </div>
-            <div>
-              <Label>حالة الملكة</Label>
-              <Select
-                value={form.queenStatus}
-                onValueChange={(v) => setForm((f) => ({ ...f, queenStatus: v as any }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="mated">ملكة ملقحة</SelectItem>
-                  <SelectItem value="weak">ملكة ضعيفة</SelectItem>
-                  <SelectItem value="virgin">ملكة عذراء</SelectItem>
-                  <SelectItem value="cell">بيت ملكي</SelectItem>
-                  <SelectItem value="missing">بدون ملكة</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>إنتاج العسل (كغ)</Label>
-                <Input
-                  type="number"
-                  value={form.honeyProduction}
-                  onChange={(e) => setForm((f) => ({ ...f, honeyProduction: parseFloat(e.target.value) || 0 }))}
-                  min={0}
-                />
-              </div>
-              <div>
-                <Label>عدد الإطارات</Label>
-                <Input
-                  type="number"
-                  value={form.frameCount}
-                  onChange={(e) => setForm((f) => ({ ...f, frameCount: parseInt(e.target.value) || 0 }))}
-                  min={0}
-                  max={30}
-                />
-              </div>
-            </div>
-            <div>
-              <Label>ملاحظات</Label>
-              <Textarea
-                value={form.notes}
-                onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-                maxLength={500}
-                placeholder="أي ملاحظات إضافية..."
-                rows={3}
-              />
-            </div>
-            <Button onClick={handleAdd} className="w-full gradient-honey text-primary-foreground">
-              إضافة الخلية
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <HiveFormDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        onSubmit={handleAdd}
+        title="إضافة خلية جديدة"
+        submitLabel="إضافة الخلية"
+      />
+
+      {/* Edit Dialog */}
+      <HiveFormDialog
+        open={editOpen}
+        onOpenChange={(o) => { setEditOpen(o); if (!o) setEditingHive(null); }}
+        onSubmit={handleEdit}
+        initialData={editingHive}
+        title="تعديل الخلية"
+        submitLabel="حفظ التعديلات"
+      />
 
       {/* Add Button */}
       <Button
-        onClick={() => { resetForm(); setAddOpen(true); }}
+        onClick={() => setAddOpen(true)}
         className="fixed left-4 bottom-24 w-14 h-14 rounded-full shadow-honey gradient-honey text-primary-foreground"
       >
         <Plus className="w-6 h-6" />
