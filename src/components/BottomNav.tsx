@@ -1,11 +1,11 @@
-import { Home, Grid3X3, Calendar, BarChart3, User } from "lucide-react";
+import { Home, Grid3X3, Calendar, ShoppingBag, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const navItems = [
   { icon: Home, label: "الرئيسية", path: "/" },
   { icon: Grid3X3, label: "الخلايا", path: "/hives" },
+  { icon: ShoppingBag, label: "المتجر", path: "/store" },
   { icon: Calendar, label: "الجدولة", path: "/schedule" },
-  { icon: BarChart3, label: "التحليلات", path: "/analytics" },
   { icon: User, label: "حسابي", path: "/profile" },
 ];
 

@@ -58,6 +58,39 @@ export interface Sale {
   notes?: string;
 }
 
+export interface HiveStock {
+  id?: number;
+  name: string;
+  quantity: number;
+  pricePerUnit: number;
+  status: "available" | "sold" | "reserved";
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface HoneyStock {
+  id?: number;
+  type: string;
+  quantity: number;
+  unit: string;
+  pricePerUnit: number;
+  status: "available" | "sold" | "reserved";
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Customer {
+  id?: number;
+  name: string;
+  phone?: string;
+  location?: string;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface UserProfile {
   id?: number;
   name: string;
@@ -75,15 +108,21 @@ const db = new Dexie("NahaliDB") as Dexie & {
   inspections: EntityTable<Inspection, "id">;
   inventory: EntityTable<InventoryItem, "id">;
   sales: EntityTable<Sale, "id">;
+  hiveStock: EntityTable<HiveStock, "id">;
+  honeyStock: EntityTable<HoneyStock, "id">;
+  customers: EntityTable<Customer, "id">;
   profile: EntityTable<UserProfile, "id">;
 };
 
-db.version(2).stores({
+db.version(3).stores({
   hives: "++id, name, location, queenStatus, createdAt",
   tasks: "++id, date, type, completed, hiveId",
   inspections: "++id, hiveId, date",
   inventory: "++id, name, category",
   sales: "++id, date, customerName",
+  hiveStock: "++id, name, status",
+  honeyStock: "++id, type, status",
+  customers: "++id, name, phone",
   profile: "++id",
 });
 
