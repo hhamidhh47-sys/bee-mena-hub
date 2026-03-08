@@ -19,7 +19,7 @@ const HivesPage = () => {
   const [form, setForm] = useState({
     name: "",
     location: "",
-    queenStatus: "healthy" as "healthy" | "weak" | "missing",
+    queenStatus: "mated" as "mated" | "weak" | "virgin" | "cell" | "missing",
     honeyProduction: 0,
   });
 
