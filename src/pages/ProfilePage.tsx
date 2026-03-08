@@ -1,5 +1,5 @@
 import AppLayout from "@/components/AppLayout";
-import { User, Settings, Bell, HelpCircle, LogOut, ChevronLeft, Moon, Globe, Download, Upload, Pencil, MapPin, Phone, Mail, Lock, Cloud, Flower2, BookOpen, Users, Stethoscope } from "lucide-react";
+import { User, Settings, Bell, HelpCircle, LogOut, ChevronLeft, Moon, Globe, Download, Upload, Pencil, MapPin, Phone, Mail, Lock, Cloud, Flower2, BookOpen, Users, Stethoscope, QrCode, Pill, Calculator, Timer, Crown, DollarSign } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
