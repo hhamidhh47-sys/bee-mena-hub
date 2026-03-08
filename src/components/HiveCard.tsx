@@ -1,5 +1,6 @@
-import { Crown, Heart, AlertTriangle, Check } from "lucide-react";
+import { Crown, Heart, AlertTriangle, Check, ClipboardCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 interface HiveCardProps {
   id: string;
@@ -41,6 +42,7 @@ const queenStatusConfig = {
 };
 
 const HiveCard = ({
+  id,
   name,
   location,
   queenStatus,
@@ -49,6 +51,7 @@ const HiveCard = ({
   alerts,
   onClick,
 }: HiveCardProps) => {
+  const navigate = useNavigate();
   const status = queenStatusConfig[queenStatus] || queenStatusConfig.mated;
   const StatusIcon = status.icon;
 
@@ -88,6 +91,18 @@ const HiveCard = ({
           <p className="font-medium text-primary">{honeyProduction} كغ</p>
         </div>
       </div>
+
+      {/* Inspect Button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          navigate(`/inspection/${id}`);
+        }}
+        className="w-full mt-3 flex items-center justify-center gap-2 py-2 rounded-xl border border-primary/20 text-primary text-sm font-medium hover:bg-primary/5 transition-all"
+      >
+        <ClipboardCheck className="w-4 h-4" />
+        فحص الخلية
+      </button>
     </div>
   );
 };

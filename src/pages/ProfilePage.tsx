@@ -1,5 +1,5 @@
 import AppLayout from "@/components/AppLayout";
-import { User, Settings, Bell, HelpCircle, LogOut, ChevronLeft, Moon, Globe, Download, Upload, Pencil, MapPin, Phone, Mail, Lock } from "lucide-react";
+import { User, Settings, Bell, HelpCircle, LogOut, ChevronLeft, Moon, Globe, Download, Upload, Pencil, MapPin, Phone, Mail, Lock, Cloud, Flower2, BookOpen, Users, Stethoscope } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { exportDatabase, downloadBackup, importDatabase } from "@/lib/backup";
 import { useRef, useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 const ProfilePage = () => {
   const stats = useHiveStats();
@@ -224,6 +225,24 @@ const ProfilePage = () => {
             استعادة البيانات
           </Button>
           <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
+        </div>
+      </div>
+
+      {/* Quick Links */}
+      <div className="bg-card rounded-2xl border border-border p-4 mb-6">
+        <h3 className="font-bold mb-3">أدوات إضافية</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { icon: Cloud, label: "مراقبة الطقس", path: "/weather", color: "text-blue-500" },
+            { icon: Flower2, label: "مواسم الإزهار", path: "/seasons", color: "text-nature" },
+            { icon: BookOpen, label: "المكتبة التعليمية", path: "/education", color: "text-primary" },
+            { icon: Stethoscope, label: "دليل الخبراء", path: "/experts", color: "text-accent" },
+          ].map(item => (
+            <Link key={item.path} to={item.path} className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-all">
+              <item.icon className={`w-5 h-5 ${item.color}`} />
+              <span className="text-sm font-medium">{item.label}</span>
+            </Link>
+          ))}
         </div>
       </div>
 
