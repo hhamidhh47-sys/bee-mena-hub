@@ -5,7 +5,7 @@ interface HiveCardProps {
   id: string;
   name: string;
   location: string;
-  queenStatus: "healthy" | "weak" | "missing";
+  queenStatus: "mated" | "weak" | "virgin" | "cell" | "missing";
   lastInspection: string;
   honeyProduction: number;
   alerts?: number;
