@@ -418,6 +418,103 @@ const HoneyStockTab = () => {
   );
 };
 
+// --- Customer Detail Dialog ---
+const CustomerDetailDialog = ({ customerId, onClose, onOpenInvoice }: { customerId: number; onClose: () => void; onOpenInvoice: (id: number) => void }) => {
+  const customer = useLiveQuery(() => db.customers.get(customerId), [customerId]);
+  const invoices = useInvoices(customerId);
+
+  if (!customer) return null;
+
+  const totalInvoices = invoices?.reduce((s, i) => s + i.totalAmount, 0) || 0;
+  const totalPaid = invoices?.reduce((s, i) => s + i.paidAmount, 0) || 0;
+  const totalDebt = totalInvoices - totalPaid;
+
+  const statusLabel = (s: string) => {
+    switch (s) { case "paid": return "مدفوعة"; case "partial": return "جزئية"; case "unpaid": return "غير مدفوعة"; default: return s; }
+  };
+  const statusVariant = (s: string) => {
+    switch (s) { case "paid": return "default" as const; case "partial": return "outline" as const; case "unpaid": return "destructive" as const; default: return "default" as const; }
+  };
+
+  return (
+    <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>تفاصيل العميل</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <h3 className="text-lg font-bold">{customer.name}</h3>
+            {customer.phone && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Phone className="w-4 h-4" />
+                <span dir="ltr">{customer.phone}</span>
+              </div>
+            )}
+            {customer.location && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="w-4 h-4" />
+                <span>{customer.location}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            <Card>
+              <CardContent className="p-3 text-center">
+                <p className="text-xs text-muted-foreground">الفواتير</p>
+                <p className="text-lg font-bold">{invoices?.length || 0}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-3 text-center">
+                <p className="text-xs text-muted-foreground">المدفوع</p>
+                <p className="text-lg font-bold text-primary">{totalPaid} <span className="text-xs">ر.س</span></p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-3 text-center">
+                <p className="text-xs text-muted-foreground">الديون</p>
+                <p className={cn("text-lg font-bold", totalDebt > 0 ? "text-destructive" : "text-primary")}>{totalDebt} <span className="text-xs">ر.س</span></p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div>
+            <Label className="text-sm font-semibold mb-2 block">الفواتير ({invoices?.length || 0})</Label>
+            {(!invoices || invoices.length === 0) ? (
+              <p className="text-sm text-muted-foreground text-center py-4">لا توجد فواتير لهذا العميل</p>
+            ) : (
+              <div className="space-y-2">
+                {invoices.map(inv => (
+                  <Card key={inv.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => { onClose(); onOpenInvoice(inv.id!); }}>
+                    <CardContent className="p-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium">{inv.invoiceNumber}</p>
+                          <p className="text-xs text-muted-foreground">{new Date(inv.date).toLocaleDateString("ar-SA")}</p>
+                        </div>
+                        <div className="text-left">
+                          <Badge variant={statusVariant(inv.status)}>{statusLabel(inv.status)}</Badge>
+                          <p className="text-sm font-semibold mt-1">{inv.totalAmount} ر.س</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {customer.notes && (
+            <p className="text-sm text-muted-foreground">ملاحظات: {customer.notes}</p>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 // --- Customers Tab ---
 const CustomersTab = () => {
   const customers = useCustomers();
@@ -426,6 +523,8 @@ const CustomersTab = () => {
   const [search, setSearch] = useState("");
   const [editItem, setEditItem] = useState<Customer | null>(null);
   const [form, setForm] = useState({ name: "", phone: "", location: "", notes: "" });
+  const [detailCustomerId, setDetailCustomerId] = useState<number | null>(null);
+  const [detailInvoiceId, setDetailInvoiceId] = useState<number | null>(null);
 
   const resetForm = () => {
     setForm({ name: "", phone: "", location: "", notes: "" });
@@ -460,6 +559,17 @@ const CustomersTab = () => {
 
   return (
     <div className="space-y-4">
+      {detailCustomerId && (
+        <CustomerDetailDialog
+          customerId={detailCustomerId}
+          onClose={() => setDetailCustomerId(null)}
+          onOpenInvoice={(id) => setDetailInvoiceId(id)}
+        />
+      )}
+      {detailInvoiceId && (
+        <InvoiceViewDialog invoiceId={detailInvoiceId} onClose={() => setDetailInvoiceId(null)} />
+      )}
+
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -499,12 +609,12 @@ const CustomersTab = () => {
             </TableHeader>
             <TableBody>
               {filtered.map(item => (
-                <TableRow key={item.id}>
+                <TableRow key={item.id} className="cursor-pointer" onClick={() => item.id && setDetailCustomerId(item.id)}>
                   <TableCell className="font-medium">{item.name}</TableCell>
                   <TableCell dir="ltr" className="text-right">{item.phone || "-"}</TableCell>
                   <TableCell>{item.location || "-"}</TableCell>
                   <TableCell>
-                    <div className="flex gap-1">
+                    <div className="flex gap-1" onClick={e => e.stopPropagation()}>
                       <Button variant="ghost" size="icon" onClick={() => handleEdit(item)}><Pencil className="w-4 h-4" /></Button>
                       <Button variant="ghost" size="icon" onClick={() => item.id && handleDelete(item.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
                     </div>
