@@ -516,26 +516,506 @@ const CustomersTab = () => {
   );
 };
 
+// --- Sales/Invoices Tab ---
+const SalesTab = () => {
+  const invoices = useInvoices();
+  const customers = useCustomers();
+  const hiveStock = useHiveStock();
+  const honeyStock = useHoneyStock();
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [viewInvoice, setViewInvoice] = useState<number | null>(null);
+  const [customerPickerOpen, setCustomerPickerOpen] = useState(false);
+
+  const [form, setForm] = useState({
+    customerName: "",
+    customerId: undefined as number | undefined,
+    items: [] as InvoiceItem[],
+    paidAmount: 0,
+    notes: "",
+    dueDate: "",
+  });
+
+  const [newItem, setNewItem] = useState({ productType: "honey" as "hive" | "honey" | "other", productName: "", quantity: 1, unitPrice: 0 });
+
+  const resetForm = () => {
+    setForm({ customerName: "", customerId: undefined, items: [], paidAmount: 0, notes: "", dueDate: "" });
+    setNewItem({ productType: "honey", productName: "", quantity: 1, unitPrice: 0 });
+  };
+
+  const addItemToInvoice = () => {
+    if (!newItem.productName || newItem.quantity <= 0) return;
+    const total = newItem.quantity * newItem.unitPrice;
+    setForm(f => ({
+      ...f,
+      items: [...f.items, { ...newItem, total }],
+    }));
+    setNewItem({ productType: "honey", productName: "", quantity: 1, unitPrice: 0 });
+  };
+
+  const removeItem = (idx: number) => {
+    setForm(f => ({ ...f, items: f.items.filter((_, i) => i !== idx) }));
+  };
+
+  const totalAmount = form.items.reduce((s, i) => s + i.total, 0);
+
+  const handleSave = async () => {
+    if (!form.customerName || form.items.length === 0) {
+      toast({ title: "يجب اختيار عميل وإضافة منتج واحد على الأقل", variant: "destructive" });
+      return;
+    }
+    const invoiceNumber = await generateInvoiceNumber();
+    const status = form.paidAmount >= totalAmount ? "paid" : form.paidAmount > 0 ? "partial" : "unpaid";
+    await addInvoice({
+      invoiceNumber,
+      customerId: form.customerId,
+      customerName: form.customerName,
+      items: form.items,
+      totalAmount,
+      paidAmount: form.paidAmount,
+      status: status as "paid" | "partial" | "unpaid",
+      date: new Date(),
+      dueDate: form.dueDate ? new Date(form.dueDate) : undefined,
+      notes: form.notes || undefined,
+    });
+    toast({ title: "تم إنشاء الفاتورة بنجاح ✅", description: `فاتورة رقم ${invoiceNumber}` });
+    resetForm();
+    setOpen(false);
+  };
+
+  const handleDelete = async (id: number) => {
+    await deleteInvoice(id);
+    toast({ title: "تم حذف الفاتورة" });
+  };
+
+  const filtered = invoices?.filter(i =>
+    i.customerName.includes(search) || i.invoiceNumber.includes(search)
+  ) || [];
+
+  const statusLabel = (s: string) => {
+    switch (s) {
+      case "paid": return "مدفوعة";
+      case "partial": return "مدفوعة جزئياً";
+      case "unpaid": return "غير مدفوعة";
+      default: return s;
+    }
+  };
+
+  const statusVariant = (s: string) => {
+    switch (s) {
+      case "paid": return "default" as const;
+      case "partial": return "outline" as const;
+      case "unpaid": return "destructive" as const;
+      default: return "default" as const;
+    }
+  };
+
+  // Available products for adding
+  const availableProducts = [
+    ...(hiveStock?.filter(h => h.status === "available").map(h => ({ type: "hive" as const, name: h.name, price: h.pricePerUnit })) || []),
+    ...(honeyStock?.filter(h => h.status === "available").map(h => ({ type: "honey" as const, name: h.type, price: h.pricePerUnit })) || []),
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input placeholder="بحث بالعميل أو رقم الفاتورة..." className="pr-9" value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
+        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
+          <DialogTrigger asChild>
+            <Button size="sm"><Plus className="w-4 h-4 ml-1" /> فاتورة جديدة</Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>إنشاء فاتورة جديدة</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {/* Customer selector */}
+              <div>
+                <Label>العميل</Label>
+                <Popover open={customerPickerOpen} onOpenChange={setCustomerPickerOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                      {form.customerName || "اختر العميل..."}
+                      <ChevronsUpDown className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="ابحث بالاسم أو الهاتف..." />
+                      <CommandList>
+                        <CommandEmpty>لا يوجد عملاء مطابقون</CommandEmpty>
+                        <CommandGroup>
+                          {customers?.map(c => (
+                            <CommandItem
+                              key={c.id}
+                              value={`${c.name} ${c.phone || ""}`}
+                              onSelect={() => {
+                                setForm(f => ({ ...f, customerName: c.name, customerId: c.id }));
+                                setCustomerPickerOpen(false);
+                              }}
+                            >
+                              <Check className={cn("ml-2 h-4 w-4", form.customerName === c.name ? "opacity-100" : "opacity-0")} />
+                              <div className="flex flex-col">
+                                <span>{c.name}</span>
+                                <span className="text-xs text-muted-foreground">{c.phone || ""} {c.location ? `- ${c.location}` : ""}</span>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Add product item */}
+              <div className="border rounded-lg p-3 space-y-2 bg-muted/30">
+                <Label className="text-sm font-semibold">إضافة منتج</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Select value={newItem.productType} onValueChange={(v) => setNewItem(n => ({ ...n, productType: v as any, productName: "" }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="hive">خلية</SelectItem>
+                      <SelectItem value="honey">عسل</SelectItem>
+                      <SelectItem value="other">أخرى</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {newItem.productType === "other" ? (
+                    <Input placeholder="اسم المنتج" value={newItem.productName} onChange={e => setNewItem(n => ({ ...n, productName: e.target.value }))} />
+                  ) : (
+                    <Select value={newItem.productName} onValueChange={(v) => {
+                      const product = availableProducts.find(p => p.name === v && p.type === newItem.productType);
+                      setNewItem(n => ({ ...n, productName: v, unitPrice: product?.price || 0 }));
+                    }}>
+                      <SelectTrigger><SelectValue placeholder="اختر المنتج" /></SelectTrigger>
+                      <SelectContent>
+                        {availableProducts.filter(p => p.type === newItem.productType).map((p, i) => (
+                          <SelectItem key={i} value={p.name}>{p.name} - {p.price} ر.س</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-xs">الكمية</Label>
+                    <Input type="number" min={1} value={newItem.quantity} onChange={e => setNewItem(n => ({ ...n, quantity: +e.target.value }))} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">سعر الوحدة</Label>
+                    <Input type="number" min={0} value={newItem.unitPrice} onChange={e => setNewItem(n => ({ ...n, unitPrice: +e.target.value }))} />
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" className="w-full" onClick={addItemToInvoice}>
+                  <Plus className="w-3 h-3 ml-1" /> إضافة للفاتورة
+                </Button>
+              </div>
+
+              {/* Items list */}
+              {form.items.length > 0 && (
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-right text-xs">المنتج</TableHead>
+                        <TableHead className="text-right text-xs">الكمية</TableHead>
+                        <TableHead className="text-right text-xs">المجموع</TableHead>
+                        <TableHead className="text-xs w-8"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {form.items.map((item, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell className="text-sm">{item.productName}</TableCell>
+                          <TableCell className="text-sm">{item.quantity}</TableCell>
+                          <TableCell className="text-sm">{item.total} ر.س</TableCell>
+                          <TableCell>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeItem(idx)}>
+                              <Trash2 className="w-3 h-3 text-destructive" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+
+              {/* Totals */}
+              <div className="bg-primary/5 rounded-lg p-3 space-y-2">
+                <div className="flex justify-between text-sm font-semibold">
+                  <span>الإجمالي:</span>
+                  <span>{totalAmount} ر.س</span>
+                </div>
+                <div>
+                  <Label className="text-xs">المبلغ المدفوع</Label>
+                  <Input type="number" min={0} max={totalAmount} value={form.paidAmount} onChange={e => setForm(f => ({ ...f, paidAmount: +e.target.value }))} />
+                </div>
+                {form.paidAmount < totalAmount && (
+                  <div className="flex justify-between text-sm text-destructive">
+                    <span>المتبقي (دين):</span>
+                    <span>{totalAmount - form.paidAmount} ر.س</span>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <Label className="text-xs">تاريخ الاستحقاق (اختياري)</Label>
+                <Input type="date" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
+              </div>
+              <Input placeholder="ملاحظات (اختياري)" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
+              <Button className="w-full" onClick={handleSave}>إنشاء الفاتورة</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Invoice View Dialog */}
+      {viewInvoice && <InvoiceViewDialog invoiceId={viewInvoice} onClose={() => setViewInvoice(null)} />}
+
+      {filtered.length === 0 ? (
+        <Card><CardContent className="py-12 text-center text-muted-foreground">لا توجد فواتير بعد</CardContent></Card>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map(inv => (
+            <Card key={inv.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setViewInvoice(inv.id!)}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <p className="font-bold text-sm">{inv.invoiceNumber}</p>
+                    <p className="text-xs text-muted-foreground">{inv.customerName}</p>
+                  </div>
+                  <Badge variant={statusVariant(inv.status)}>{statusLabel(inv.status)}</Badge>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">{new Date(inv.date).toLocaleDateString("ar-SA")}</span>
+                  <span className="font-semibold">{inv.totalAmount} ر.س</span>
+                </div>
+                {inv.status !== "paid" && (
+                  <p className="text-xs text-destructive mt-1">متبقي: {inv.totalAmount - inv.paidAmount} ر.س</p>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- Invoice View Dialog ---
+const InvoiceViewDialog = ({ invoiceId, onClose }: { invoiceId: number; onClose: () => void }) => {
+  const { toast } = useToast();
+  const invoice = useLiveQuery(() => db.invoices.get(invoiceId), [invoiceId]);
+  const payments = usePayments(invoiceId);
+  const [payOpen, setPayOpen] = useState(false);
+  const [payAmount, setPayAmount] = useState(0);
+  const [payMethod, setPayMethod] = useState<"cash" | "transfer" | "other">("cash");
+
+  if (!invoice) return null;
+
+  const remaining = invoice.totalAmount - invoice.paidAmount;
+
+  const handlePay = async () => {
+    if (payAmount <= 0) return;
+    await addPayment({
+      invoiceId,
+      customerId: invoice.customerId,
+      amount: Math.min(payAmount, remaining),
+      method: payMethod,
+      date: new Date(),
+    });
+    toast({ title: "تم تسجيل الدفعة ✅" });
+    setPayOpen(false);
+    setPayAmount(0);
+  };
+
+  return (
+    <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>فاتورة {invoice.invoiceNumber}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div>
+              <p className="text-muted-foreground">العميل</p>
+              <p className="font-medium">{invoice.customerName}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">التاريخ</p>
+              <p className="font-medium">{new Date(invoice.date).toLocaleDateString("ar-SA")}</p>
+            </div>
+          </div>
+
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-right text-xs">المنتج</TableHead>
+                <TableHead className="text-right text-xs">الكمية</TableHead>
+                <TableHead className="text-right text-xs">السعر</TableHead>
+                <TableHead className="text-right text-xs">المجموع</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {invoice.items.map((item, idx) => (
+                <TableRow key={idx}>
+                  <TableCell className="text-sm">{item.productName}</TableCell>
+                  <TableCell className="text-sm">{item.quantity}</TableCell>
+                  <TableCell className="text-sm">{item.unitPrice}</TableCell>
+                  <TableCell className="text-sm">{item.total} ر.س</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          <div className="bg-muted/50 rounded-lg p-3 space-y-1 text-sm">
+            <div className="flex justify-between font-bold">
+              <span>الإجمالي</span><span>{invoice.totalAmount} ر.س</span>
+            </div>
+            <div className="flex justify-between text-nature">
+              <span>المدفوع</span><span>{invoice.paidAmount} ر.س</span>
+            </div>
+            {remaining > 0 && (
+              <div className="flex justify-between text-destructive font-semibold">
+                <span>المتبقي</span><span>{remaining} ر.س</span>
+              </div>
+            )}
+          </div>
+
+          {/* Payment history */}
+          {payments && payments.length > 0 && (
+            <div>
+              <Label className="text-sm font-semibold mb-2 block">سجل الدفعات</Label>
+              <div className="space-y-1">
+                {payments.map(p => (
+                  <div key={p.id} className="flex justify-between text-sm bg-card border rounded-md px-3 py-2">
+                    <span>{new Date(p.date).toLocaleDateString("ar-SA")}</span>
+                    <span className="text-muted-foreground">{p.method === "cash" ? "نقداً" : p.method === "transfer" ? "تحويل" : "أخرى"}</span>
+                    <span className="font-medium text-nature">{p.amount} ر.س</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Add payment */}
+          {remaining > 0 && (
+            <>
+              {payOpen ? (
+                <div className="border rounded-lg p-3 space-y-2 bg-muted/30">
+                  <Label className="text-sm">تسجيل دفعة جديدة</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input type="number" placeholder="المبلغ" min={1} max={remaining} value={payAmount} onChange={e => setPayAmount(+e.target.value)} />
+                    <Select value={payMethod} onValueChange={(v) => setPayMethod(v as any)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cash">نقداً</SelectItem>
+                        <SelectItem value="transfer">تحويل</SelectItem>
+                        <SelectItem value="other">أخرى</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button className="flex-1" onClick={handlePay}>تأكيد الدفع</Button>
+                    <Button variant="outline" onClick={() => setPayOpen(false)}>إلغاء</Button>
+                  </div>
+                </div>
+              ) : (
+                <Button variant="outline" className="w-full" onClick={() => { setPayAmount(remaining); setPayOpen(true); }}>
+                  <DollarSign className="w-4 h-4 ml-1" /> تسجيل دفعة
+                </Button>
+              )}
+            </>
+          )}
+
+          {invoice.notes && (
+            <p className="text-sm text-muted-foreground">ملاحظات: {invoice.notes}</p>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// --- Debts Tab ---
+const DebtsTab = () => {
+  const debts = useCustomerDebts();
+  const totalDebt = debts?.reduce((s, d) => s + d.totalDebt, 0) || 0;
+
+  return (
+    <div className="space-y-4">
+      <Card className="bg-destructive/5 border-destructive/20">
+        <CardContent className="p-4 text-center">
+          <p className="text-sm text-muted-foreground">إجمالي الديون</p>
+          <p className="text-3xl font-bold text-destructive">{totalDebt} ر.س</p>
+          <p className="text-xs text-muted-foreground mt-1">{debts?.length || 0} عملاء لديهم ديون</p>
+        </CardContent>
+      </Card>
+
+      {(!debts || debts.length === 0) ? (
+        <Card><CardContent className="py-12 text-center text-muted-foreground">لا توجد ديون مستحقة 🎉</CardContent></Card>
+      ) : (
+        <div className="space-y-3">
+          {debts.map((d, i) => (
+            <Card key={i}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-bold">{d.customerName}</p>
+                    <p className="text-xs text-muted-foreground">{d.invoiceCount} فاتورة غير مسددة</p>
+                  </div>
+                  <div className="text-left">
+                    <p className="text-lg font-bold text-destructive">{d.totalDebt} ر.س</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // --- Main Store Page ---
 const StorePage = () => {
   return (
     <AppLayout title="المتجر">
-      <Tabs defaultValue="hives" dir="rtl" className="w-full">
-        <TabsList className="w-full grid grid-cols-3 mb-4">
-          <TabsTrigger value="hives" className="gap-1.5">
-            <Package className="w-4 h-4" />
-            مخزون الخلايا
+      <Tabs defaultValue="sales" dir="rtl" className="w-full">
+        <TabsList className="w-full grid grid-cols-5 mb-4">
+          <TabsTrigger value="sales" className="gap-1 text-xs px-1">
+            <Receipt className="w-3.5 h-3.5" />
+            المبيعات
           </TabsTrigger>
-          <TabsTrigger value="honey" className="gap-1.5">
-            <Droplets className="w-4 h-4" />
-            مخزون العسل
+          <TabsTrigger value="debts" className="gap-1 text-xs px-1">
+            <AlertCircle className="w-3.5 h-3.5" />
+            الديون
           </TabsTrigger>
-          <TabsTrigger value="customers" className="gap-1.5">
-            <Users className="w-4 h-4" />
+          <TabsTrigger value="hives" className="gap-1 text-xs px-1">
+            <Package className="w-3.5 h-3.5" />
+            الخلايا
+          </TabsTrigger>
+          <TabsTrigger value="honey" className="gap-1 text-xs px-1">
+            <Droplets className="w-3.5 h-3.5" />
+            العسل
+          </TabsTrigger>
+          <TabsTrigger value="customers" className="gap-1 text-xs px-1">
+            <Users className="w-3.5 h-3.5" />
             العملاء
           </TabsTrigger>
         </TabsList>
 
+        <TabsContent value="sales">
+          <SalesTab />
+        </TabsContent>
+        <TabsContent value="debts">
+          <DebtsTab />
+        </TabsContent>
         <TabsContent value="hives">
           <HiveStockTab />
         </TabsContent>
