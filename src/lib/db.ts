@@ -3,11 +3,13 @@ import Dexie, { type EntityTable } from "dexie";
 // Types
 export interface Hive {
   id?: number;
+  code?: string;
   name: string;
   location: string;
   queenStatus: "mated" | "weak" | "virgin" | "cell" | "missing";
   lastInspection: string;
   honeyProduction: number;
+  frameCount?: number;
   alerts?: number;
   notes?: string;
   createdAt: Date;
@@ -124,7 +126,7 @@ const db = new Dexie("NahaliDB") as Dexie & {
   profile: EntityTable<UserProfile, "id">;
 };
 
-db.version(4).stores({
+db.version(5).stores({
   authUsers: "++id, &username",
   hives: "++id, name, location, queenStatus, createdAt",
   tasks: "++id, date, type, completed, hiveId",

@@ -3,6 +3,7 @@ import HiveCard from "@/components/HiveCard";
 import { Button } from "@/components/ui/button";
 import { Plus, Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -18,13 +19,16 @@ const HivesPage = () => {
 
   const [form, setForm] = useState({
     name: "",
+    code: "",
     location: "",
     queenStatus: "mated" as "mated" | "weak" | "virgin" | "cell" | "missing",
     honeyProduction: 0,
+    frameCount: 10,
+    notes: "",
   });
 
   const resetForm = () => {
-    setForm({ name: "", location: "", queenStatus: "mated", honeyProduction: 0 });
+    setForm({ name: "", code: "", location: "", queenStatus: "mated", honeyProduction: 0, frameCount: 10, notes: "" });
   };
 
   const handleAdd = async () => {
@@ -40,10 +44,13 @@ const HivesPage = () => {
     }
     await addHive({
       name,
+      code: form.code.trim() || undefined,
       location,
       queenStatus: form.queenStatus,
       lastInspection: "جديدة",
       honeyProduction: Math.max(0, form.honeyProduction),
+      frameCount: Math.max(0, form.frameCount),
+      notes: form.notes.trim() || undefined,
     });
     resetForm();
     setAddOpen(false);
@@ -102,7 +109,7 @@ const HivesPage = () => {
           <DialogHeader>
             <DialogTitle>إضافة خلية جديدة</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 pt-2">
+          <div className="space-y-4 pt-2 max-h-[70vh] overflow-y-auto">
             <div>
               <Label>اسم الخلية *</Label>
               <Input
@@ -110,6 +117,15 @@ const HivesPage = () => {
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 maxLength={100}
                 placeholder="مثال: خلية الورد"
+              />
+            </div>
+            <div>
+              <Label>كود الخلية</Label>
+              <Input
+                value={form.code}
+                onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
+                maxLength={50}
+                placeholder="مثال: H-001"
               />
             </div>
             <div>
@@ -139,13 +155,35 @@ const HivesPage = () => {
                 </SelectContent>
               </Select>
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>إنتاج العسل (كغ)</Label>
+                <Input
+                  type="number"
+                  value={form.honeyProduction}
+                  onChange={(e) => setForm((f) => ({ ...f, honeyProduction: parseFloat(e.target.value) || 0 }))}
+                  min={0}
+                />
+              </div>
+              <div>
+                <Label>عدد الإطارات</Label>
+                <Input
+                  type="number"
+                  value={form.frameCount}
+                  onChange={(e) => setForm((f) => ({ ...f, frameCount: parseInt(e.target.value) || 0 }))}
+                  min={0}
+                  max={30}
+                />
+              </div>
+            </div>
             <div>
-              <Label>إنتاج العسل (كغ)</Label>
-              <Input
-                type="number"
-                value={form.honeyProduction}
-                onChange={(e) => setForm((f) => ({ ...f, honeyProduction: parseFloat(e.target.value) || 0 }))}
-                min={0}
+              <Label>ملاحظات</Label>
+              <Textarea
+                value={form.notes}
+                onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+                maxLength={500}
+                placeholder="أي ملاحظات إضافية..."
+                rows={3}
               />
             </div>
             <Button onClick={handleAdd} className="w-full gradient-honey text-primary-foreground">
