@@ -4,84 +4,27 @@ import { Button } from "@/components/ui/button";
 import { Plus, Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { useHives, useHiveStats } from "@/hooks/useDatabase";
 
 const HivesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
-
-  const hives = [
-    {
-      id: "1",
-      name: "خلية الورد",
-      location: "المزرعة الشمالية",
-      queenStatus: "healthy" as const,
-      lastInspection: "قبل 3 أيام",
-      honeyProduction: 12,
-    },
-    {
-      id: "2",
-      name: "خلية السدر",
-      location: "المزرعة الجنوبية",
-      queenStatus: "weak" as const,
-      lastInspection: "قبل أسبوع",
-      honeyProduction: 8,
-      alerts: 2,
-    },
-    {
-      id: "3",
-      name: "خلية الزهور",
-      location: "المزرعة الشرقية",
-      queenStatus: "healthy" as const,
-      lastInspection: "اليوم",
-      honeyProduction: 15,
-    },
-    {
-      id: "4",
-      name: "خلية النعناع",
-      location: "المزرعة الغربية",
-      queenStatus: "missing" as const,
-      lastInspection: "قبل أسبوعين",
-      honeyProduction: 3,
-      alerts: 1,
-    },
-    {
-      id: "5",
-      name: "خلية الليمون",
-      location: "المزرعة الشمالية",
-      queenStatus: "healthy" as const,
-      lastInspection: "قبل يومين",
-      honeyProduction: 10,
-    },
-    {
-      id: "6",
-      name: "خلية البرتقال",
-      location: "المزرعة الجنوبية",
-      queenStatus: "healthy" as const,
-      lastInspection: "قبل 4 أيام",
-      honeyProduction: 14,
-    },
-  ];
-
-  const filteredHives = hives.filter((hive) =>
-    hive.name.includes(searchQuery) || hive.location.includes(searchQuery)
-  );
-
-  const healthyCount = hives.filter((h) => h.queenStatus === "healthy").length;
-  const alertCount = hives.filter((h) => h.alerts && h.alerts > 0).length;
+  const hives = useHives(searchQuery);
+  const stats = useHiveStats();
 
   return (
     <AppLayout title="خلايا النحل">
       {/* Summary */}
       <div className="flex gap-3 mb-6">
         <div className="flex-1 bg-nature/10 rounded-xl p-3 text-center">
-          <p className="text-2xl font-bold text-nature">{healthyCount}</p>
+          <p className="text-2xl font-bold text-nature">{stats?.healthy ?? 0}</p>
           <p className="text-xs text-muted-foreground">خلايا صحية</p>
         </div>
         <div className="flex-1 bg-destructive/10 rounded-xl p-3 text-center">
-          <p className="text-2xl font-bold text-destructive">{alertCount}</p>
+          <p className="text-2xl font-bold text-destructive">{stats?.withAlerts ?? 0}</p>
           <p className="text-xs text-muted-foreground">تحتاج اهتمام</p>
         </div>
         <div className="flex-1 bg-primary/10 rounded-xl p-3 text-center">
-          <p className="text-2xl font-bold text-primary">{hives.length}</p>
+          <p className="text-2xl font-bold text-primary">{stats?.total ?? 0}</p>
           <p className="text-xs text-muted-foreground">إجمالي الخلايا</p>
         </div>
       </div>
@@ -104,9 +47,14 @@ const HivesPage = () => {
 
       {/* Hives Grid */}
       <div className="grid gap-4 md:grid-cols-2">
-        {filteredHives.map((hive) => (
-          <HiveCard key={hive.id} {...hive} />
+        {hives?.map((hive) => (
+          <HiveCard key={hive.id} id={String(hive.id)} {...hive} />
         ))}
+        {hives?.length === 0 && (
+          <p className="text-muted-foreground text-center col-span-2 py-8">
+            لا توجد خلايا مطابقة للبحث
+          </p>
+        )}
       </div>
 
       {/* Add Button */}
