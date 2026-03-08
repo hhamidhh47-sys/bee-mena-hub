@@ -49,7 +49,7 @@ const HiveCard = ({
   alerts,
   onClick,
 }: HiveCardProps) => {
-  const status = queenStatusConfig[queenStatus];
+  const status = queenStatusConfig[queenStatus] || queenStatusConfig.mated;
   const StatusIcon = status.icon;
 
   return (
