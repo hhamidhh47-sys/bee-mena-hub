@@ -1,5 +1,6 @@
-import { Crown, Heart, AlertTriangle, Check } from "lucide-react";
+import { Crown, Heart, AlertTriangle, Check, ClipboardCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 interface HiveCardProps {
   id: string;
