@@ -79,3 +79,54 @@ export async function updateProfile(changes: Partial<UserProfile>) {
     return db.profile.update(profile.id, changes);
   }
 }
+
+// Hive Stock
+export function useHiveStock() {
+  return useLiveQuery(() => db.hiveStock.toArray());
+}
+
+export async function addHiveStock(item: Omit<HiveStock, "id" | "createdAt" | "updatedAt">) {
+  return db.hiveStock.add({ ...item, createdAt: new Date(), updatedAt: new Date() });
+}
+
+export async function updateHiveStock(id: number, changes: Partial<HiveStock>) {
+  return db.hiveStock.update(id, { ...changes, updatedAt: new Date() });
+}
+
+export async function deleteHiveStock(id: number) {
+  return db.hiveStock.delete(id);
+}
+
+// Honey Stock
+export function useHoneyStock() {
+  return useLiveQuery(() => db.honeyStock.toArray());
+}
+
+export async function addHoneyStock(item: Omit<HoneyStock, "id" | "createdAt" | "updatedAt">) {
+  return db.honeyStock.add({ ...item, createdAt: new Date(), updatedAt: new Date() });
+}
+
+export async function updateHoneyStock(id: number, changes: Partial<HoneyStock>) {
+  return db.honeyStock.update(id, { ...changes, updatedAt: new Date() });
+}
+
+export async function deleteHoneyStock(id: number) {
+  return db.honeyStock.delete(id);
+}
+
+// Customers
+export function useCustomers() {
+  return useLiveQuery(() => db.customers.toArray());
+}
+
+export async function addCustomer(item: Omit<Customer, "id" | "createdAt" | "updatedAt">) {
+  return db.customers.add({ ...item, createdAt: new Date(), updatedAt: new Date() });
+}
+
+export async function updateCustomer(id: number, changes: Partial<Customer>) {
+  return db.customers.update(id, { ...changes, updatedAt: new Date() });
+}
+
+export async function deleteCustomer(id: number) {
+  return db.customers.delete(id);
+}

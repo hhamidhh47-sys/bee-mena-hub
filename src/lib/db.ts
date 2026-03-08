@@ -108,15 +108,21 @@ const db = new Dexie("NahaliDB") as Dexie & {
   inspections: EntityTable<Inspection, "id">;
   inventory: EntityTable<InventoryItem, "id">;
   sales: EntityTable<Sale, "id">;
+  hiveStock: EntityTable<HiveStock, "id">;
+  honeyStock: EntityTable<HoneyStock, "id">;
+  customers: EntityTable<Customer, "id">;
   profile: EntityTable<UserProfile, "id">;
 };
 
-db.version(2).stores({
+db.version(3).stores({
   hives: "++id, name, location, queenStatus, createdAt",
   tasks: "++id, date, type, completed, hiveId",
   inspections: "++id, hiveId, date",
   inventory: "++id, name, category",
   sales: "++id, date, customerName",
+  hiveStock: "++id, name, status",
+  honeyStock: "++id, type, status",
+  customers: "++id, name, phone",
   profile: "++id",
 });
 
