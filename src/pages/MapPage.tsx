@@ -167,7 +167,7 @@ const MapPage = () => {
 
       {/* Add Location Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm z-[2000]">
           <DialogHeader>
             <DialogTitle>إضافة موقع منحل</DialogTitle>
           </DialogHeader>
