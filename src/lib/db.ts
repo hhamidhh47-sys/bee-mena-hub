@@ -91,8 +91,17 @@ export interface Customer {
   updatedAt: Date;
 }
 
+export interface AuthUser {
+  id?: number;
+  username: string;
+  passwordHash: string;
+  displayName: string;
+  createdAt: Date;
+}
+
 export interface UserProfile {
   id?: number;
+  userId?: number;
   name: string;
   title: string;
   startYear: number;
