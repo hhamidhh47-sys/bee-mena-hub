@@ -112,6 +112,7 @@ export interface UserProfile {
 
 // Database
 const db = new Dexie("NahaliDB") as Dexie & {
+  authUsers: EntityTable<AuthUser, "id">;
   hives: EntityTable<Hive, "id">;
   tasks: EntityTable<Task, "id">;
   inspections: EntityTable<Inspection, "id">;
