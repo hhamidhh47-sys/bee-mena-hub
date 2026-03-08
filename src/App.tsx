@@ -19,11 +19,11 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 function ProtectedRoutes() {
-  const { user, loading } = useAuth();
+  const { user, loading, authEnabled } = useAuth();
 
   useEffect(() => {
-    if (user) seedDatabase();
-  }, [user]);
+    seedDatabase();
+  }, []);
 
   if (loading) {
     return (
@@ -36,7 +36,8 @@ function ProtectedRoutes() {
     );
   }
 
-  if (!user) return <Navigate to="/login" replace />;
+  // If auth is enabled and no user, redirect to login
+  if (authEnabled && !user) return <Navigate to="/login" replace />;
 
   return (
     <Routes>
@@ -73,9 +74,9 @@ const App = () => {
 };
 
 function LoginRoute() {
-  const { user, loading } = useAuth();
+  const { user, loading, authEnabled } = useAuth();
   if (loading) return null;
-  if (user) return <Navigate to="/" replace />;
+  if (!authEnabled || user) return <Navigate to="/" replace />;
   return <LoginPage />;
 }
 

@@ -1,5 +1,5 @@
 import AppLayout from "@/components/AppLayout";
-import { User, Settings, Bell, HelpCircle, LogOut, ChevronLeft, Moon, Globe, Download, Upload, Pencil, MapPin, Phone, Mail } from "lucide-react";
+import { User, Settings, Bell, HelpCircle, LogOut, ChevronLeft, Moon, Globe, Download, Upload, Pencil, MapPin, Phone, Mail, Lock } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,7 @@ const ProfilePage = () => {
   const stats = useHiveStats();
   const profile = useProfile();
   const { theme, toggleTheme } = useTheme();
-  const { logout } = useAuth();
+  const { logout, authEnabled, setAuthRequired, user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState({
@@ -86,6 +86,7 @@ const ProfilePage = () => {
   const yearsExperience = new Date().getFullYear() - (profile?.startYear || 2018);
 
   const menuItems = [
+    { icon: Lock, label: "تسجيل الدخول مطلوب", toggleAuth: true },
     { icon: Bell, label: "الإشعارات", value: "مفعّلة" },
     { icon: Globe, label: "اللغة", value: "العربية" },
     { icon: Moon, label: "الوضع الليلي", toggle: true },
@@ -246,19 +247,27 @@ const ProfilePage = () => {
               <p className="font-medium">{item.label}</p>
               {item.value && <p className="text-sm text-muted-foreground">{item.value}</p>}
             </div>
-            {item.toggle ? <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} /> : <ChevronLeft className="w-5 h-5 text-muted-foreground" />}
+            {item.toggleAuth ? (
+              <Switch checked={authEnabled} onCheckedChange={(checked) => setAuthRequired(checked)} />
+            ) : item.toggle ? (
+              <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
+            ) : (
+              <ChevronLeft className="w-5 h-5 text-muted-foreground" />
+            )}
           </div>
         ))}
       </div>
 
-      {/* Logout */}
-      <button
-        onClick={logout}
-        className="w-full mt-6 flex items-center justify-center gap-2 p-4 text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
-      >
-        <LogOut className="w-5 h-5" />
-        <span className="font-medium">تسجيل الخروج</span>
-      </button>
+      {/* Logout - only show when auth is enabled and user is logged in */}
+      {authEnabled && user && (
+        <button
+          onClick={logout}
+          className="w-full mt-6 flex items-center justify-center gap-2 p-4 text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
+        >
+          <LogOut className="w-5 h-5" />
+          <span className="font-medium">تسجيل الخروج</span>
+        </button>
+      )}
 
       <p className="text-center text-xs text-muted-foreground mt-8">نحّالي الإصدار 1.0.0</p>
     </AppLayout>
