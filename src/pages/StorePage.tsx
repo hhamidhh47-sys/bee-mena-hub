@@ -288,22 +288,55 @@ const HoneyStockTab = () => {
             <div className="space-y-3">
               <div>
                 <Label>مصدر العسل (خلية)</Label>
-                <Select value={form.type} onValueChange={(v) => setForm(f => ({ ...f, type: v }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر الخلية المصدر..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {hives?.map(h => (
-                      <SelectItem key={h.id} value={`عسل ${h.name}`}>
-                        {h.name} - {h.location} ({h.honeyProduction} كغ)
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="سدر">سدر</SelectItem>
-                    <SelectItem value="زهور">زهور</SelectItem>
-                    <SelectItem value="طلح">طلح</SelectItem>
-                    <SelectItem value="أخرى">أخرى</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Popover open={honeyHivePickerOpen} onOpenChange={setHoneyHivePickerOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                      {form.type || "ابحث واختر الخلية المصدر..."}
+                      <ChevronsUpDown className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="ابحث بالاسم أو الكود..." />
+                      <CommandList>
+                        <CommandEmpty>لا توجد خلايا مطابقة</CommandEmpty>
+                        <CommandGroup heading="خلاياك">
+                          {hives?.map(h => (
+                            <CommandItem
+                              key={h.id}
+                              value={`${h.name} ${h.code || ""} ${h.location}`}
+                              onSelect={() => {
+                                setForm(f => ({ ...f, type: `عسل ${h.name}` }));
+                                setHoneyHivePickerOpen(false);
+                              }}
+                            >
+                              <Check className={cn("ml-2 h-4 w-4", form.type === `عسل ${h.name}` ? "opacity-100" : "opacity-0")} />
+                              <div className="flex flex-col">
+                                <span>{h.name} {h.code ? `(${h.code})` : ""}</span>
+                                <span className="text-xs text-muted-foreground">{h.location} - {h.honeyProduction} كغ</span>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                        <CommandGroup heading="أنواع عامة">
+                          {["سدر", "زهور", "طلح", "أخرى"].map(t => (
+                            <CommandItem
+                              key={t}
+                              value={t}
+                              onSelect={() => {
+                                setForm(f => ({ ...f, type: t }));
+                                setHoneyHivePickerOpen(false);
+                              }}
+                            >
+                              <Check className={cn("ml-2 h-4 w-4", form.type === t ? "opacity-100" : "opacity-0")} />
+                              {t}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
