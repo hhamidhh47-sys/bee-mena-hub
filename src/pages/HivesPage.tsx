@@ -131,9 +131,11 @@ const HivesPage = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="healthy">صحية</SelectItem>
-                  <SelectItem value="weak">ضعيفة</SelectItem>
-                  <SelectItem value="missing">غائبة</SelectItem>
+                  <SelectItem value="mated">ملكة ملقحة</SelectItem>
+                  <SelectItem value="weak">ملكة ضعيفة</SelectItem>
+                  <SelectItem value="virgin">ملكة عذراء</SelectItem>
+                  <SelectItem value="cell">بيت ملكي</SelectItem>
+                  <SelectItem value="missing">بدون ملكة</SelectItem>
                 </SelectContent>
               </Select>
             </div>

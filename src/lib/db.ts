@@ -142,7 +142,7 @@ export async function seedDatabase() {
       {
         name: "خلية البرتقال",
         location: "المزرعة الجنوبية",
-        queenStatus: "healthy",
+        queenStatus: "cell",
         lastInspection: "قبل 4 أيام",
         honeyProduction: 14,
         createdAt: new Date(),
