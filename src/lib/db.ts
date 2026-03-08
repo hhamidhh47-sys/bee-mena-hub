@@ -95,7 +95,7 @@ export async function seedDatabase() {
       {
         name: "خلية الورد",
         location: "المزرعة الشمالية",
-        queenStatus: "healthy",
+        queenStatus: "mated",
         lastInspection: "قبل 3 أيام",
         honeyProduction: 12,
         createdAt: new Date(),
