@@ -37,8 +37,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Search, Package, Droplets, Users, Pencil, Trash2, Check, ChevronsUpDown, Receipt, AlertCircle, DollarSign, Eye } from "lucide-react";
-import { useHives, useHiveStock, useHoneyStock, useCustomers, addHiveStock, updateHiveStock, deleteHiveStock, addHoneyStock, updateHoneyStock, deleteHoneyStock, addCustomer, updateCustomer, deleteCustomer, useInvoices, addInvoice, deleteInvoice, generateInvoiceNumber, useCustomerDebts, addPayment, usePayments } from "@/hooks/useDatabase";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Search, Package, Droplets, Users, Pencil, Trash2, Check, ChevronsUpDown, Receipt, AlertCircle, DollarSign, Eye, X, Phone, MapPin } from "lucide-react";
+import { useHives, useHiveStock, useHoneyStock, useCustomers, addHiveStock, updateHiveStock, deleteHiveStock, addHoneyStock, updateHoneyStock, deleteHoneyStock, addCustomer, updateCustomer, deleteCustomer, useInvoices, addInvoice, updateInvoice, deleteInvoice, generateInvoiceNumber, useCustomerDebts, addPayment, usePayments } from "@/hooks/useDatabase";
 import type { HiveStock, HoneyStock, Customer, InvoiceItem } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -417,6 +418,103 @@ const HoneyStockTab = () => {
   );
 };
 
+// --- Customer Detail Dialog ---
+const CustomerDetailDialog = ({ customerId, onClose, onOpenInvoice }: { customerId: number; onClose: () => void; onOpenInvoice: (id: number) => void }) => {
+  const customer = useLiveQuery(() => db.customers.get(customerId), [customerId]);
+  const invoices = useInvoices(customerId);
+
+  if (!customer) return null;
+
+  const totalInvoices = invoices?.reduce((s, i) => s + i.totalAmount, 0) || 0;
+  const totalPaid = invoices?.reduce((s, i) => s + i.paidAmount, 0) || 0;
+  const totalDebt = totalInvoices - totalPaid;
+
+  const statusLabel = (s: string) => {
+    switch (s) { case "paid": return "مدفوعة"; case "partial": return "جزئية"; case "unpaid": return "غير مدفوعة"; default: return s; }
+  };
+  const statusVariant = (s: string) => {
+    switch (s) { case "paid": return "default" as const; case "partial": return "outline" as const; case "unpaid": return "destructive" as const; default: return "default" as const; }
+  };
+
+  return (
+    <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>تفاصيل العميل</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <h3 className="text-lg font-bold">{customer.name}</h3>
+            {customer.phone && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Phone className="w-4 h-4" />
+                <span dir="ltr">{customer.phone}</span>
+              </div>
+            )}
+            {customer.location && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="w-4 h-4" />
+                <span>{customer.location}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            <Card>
+              <CardContent className="p-3 text-center">
+                <p className="text-xs text-muted-foreground">الفواتير</p>
+                <p className="text-lg font-bold">{invoices?.length || 0}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-3 text-center">
+                <p className="text-xs text-muted-foreground">المدفوع</p>
+                <p className="text-lg font-bold text-primary">{totalPaid} <span className="text-xs">ر.س</span></p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-3 text-center">
+                <p className="text-xs text-muted-foreground">الديون</p>
+                <p className={cn("text-lg font-bold", totalDebt > 0 ? "text-destructive" : "text-primary")}>{totalDebt} <span className="text-xs">ر.س</span></p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div>
+            <Label className="text-sm font-semibold mb-2 block">الفواتير ({invoices?.length || 0})</Label>
+            {(!invoices || invoices.length === 0) ? (
+              <p className="text-sm text-muted-foreground text-center py-4">لا توجد فواتير لهذا العميل</p>
+            ) : (
+              <div className="space-y-2">
+                {invoices.map(inv => (
+                  <Card key={inv.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => { onClose(); onOpenInvoice(inv.id!); }}>
+                    <CardContent className="p-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium">{inv.invoiceNumber}</p>
+                          <p className="text-xs text-muted-foreground">{new Date(inv.date).toLocaleDateString("ar-SA")}</p>
+                        </div>
+                        <div className="text-left">
+                          <Badge variant={statusVariant(inv.status)}>{statusLabel(inv.status)}</Badge>
+                          <p className="text-sm font-semibold mt-1">{inv.totalAmount} ر.س</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {customer.notes && (
+            <p className="text-sm text-muted-foreground">ملاحظات: {customer.notes}</p>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 // --- Customers Tab ---
 const CustomersTab = () => {
   const customers = useCustomers();
@@ -425,6 +523,8 @@ const CustomersTab = () => {
   const [search, setSearch] = useState("");
   const [editItem, setEditItem] = useState<Customer | null>(null);
   const [form, setForm] = useState({ name: "", phone: "", location: "", notes: "" });
+  const [detailCustomerId, setDetailCustomerId] = useState<number | null>(null);
+  const [detailInvoiceId, setDetailInvoiceId] = useState<number | null>(null);
 
   const resetForm = () => {
     setForm({ name: "", phone: "", location: "", notes: "" });
@@ -459,6 +559,17 @@ const CustomersTab = () => {
 
   return (
     <div className="space-y-4">
+      {detailCustomerId && (
+        <CustomerDetailDialog
+          customerId={detailCustomerId}
+          onClose={() => setDetailCustomerId(null)}
+          onOpenInvoice={(id) => setDetailInvoiceId(id)}
+        />
+      )}
+      {detailInvoiceId && (
+        <InvoiceViewDialog invoiceId={detailInvoiceId} onClose={() => setDetailInvoiceId(null)} />
+      )}
+
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -498,12 +609,12 @@ const CustomersTab = () => {
             </TableHeader>
             <TableBody>
               {filtered.map(item => (
-                <TableRow key={item.id}>
+                <TableRow key={item.id} className="cursor-pointer" onClick={() => item.id && setDetailCustomerId(item.id)}>
                   <TableCell className="font-medium">{item.name}</TableCell>
                   <TableCell dir="ltr" className="text-right">{item.phone || "-"}</TableCell>
                   <TableCell>{item.location || "-"}</TableCell>
                   <TableCell>
-                    <div className="flex gap-1">
+                    <div className="flex gap-1" onClick={e => e.stopPropagation()}>
                       <Button variant="ghost" size="icon" onClick={() => handleEdit(item)}><Pencil className="w-4 h-4" /></Button>
                       <Button variant="ghost" size="icon" onClick={() => item.id && handleDelete(item.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
                     </div>
@@ -814,13 +925,75 @@ const InvoiceViewDialog = ({ invoiceId, onClose }: { invoiceId: number; onClose:
   const { toast } = useToast();
   const invoice = useLiveQuery(() => db.invoices.get(invoiceId), [invoiceId]);
   const payments = usePayments(invoiceId);
+  const customers = useCustomers();
+  const hiveStock = useHiveStock();
+  const honeyStock = useHoneyStock();
   const [payOpen, setPayOpen] = useState(false);
   const [payAmount, setPayAmount] = useState(0);
   const [payMethod, setPayMethod] = useState<"cash" | "transfer" | "other">("cash");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState<{
+    customerName: string;
+    customerId?: number;
+    items: InvoiceItem[];
+    notes: string;
+    dueDate: string;
+  }>({ customerName: "", items: [], notes: "", dueDate: "" });
+  const [editCustomerPicker, setEditCustomerPicker] = useState(false);
+  const [editNewItem, setEditNewItem] = useState({ productType: "honey" as "hive" | "honey" | "other", productName: "", quantity: 1, unitPrice: 0 });
 
   if (!invoice) return null;
 
   const remaining = invoice.totalAmount - invoice.paidAmount;
+
+  const startEditing = () => {
+    setEditForm({
+      customerName: invoice.customerName,
+      customerId: invoice.customerId,
+      items: [...invoice.items],
+      notes: invoice.notes || "",
+      dueDate: invoice.dueDate ? new Date(invoice.dueDate).toISOString().split("T")[0] : "",
+    });
+    setIsEditing(true);
+  };
+
+  const editTotalAmount = editForm.items.reduce((s, i) => s + i.total, 0);
+
+  const addEditItem = () => {
+    if (!editNewItem.productName || editNewItem.quantity <= 0) return;
+    const total = editNewItem.quantity * editNewItem.unitPrice;
+    setEditForm(f => ({ ...f, items: [...f.items, { ...editNewItem, total }] }));
+    setEditNewItem({ productType: "honey", productName: "", quantity: 1, unitPrice: 0 });
+  };
+
+  const removeEditItem = (idx: number) => {
+    setEditForm(f => ({ ...f, items: f.items.filter((_, i) => i !== idx) }));
+  };
+
+  const availableProducts = [
+    ...(hiveStock?.filter(h => h.status === "available").map(h => ({ type: "hive" as const, name: h.name, price: h.pricePerUnit })) || []),
+    ...(honeyStock?.filter(h => h.status === "available").map(h => ({ type: "honey" as const, name: h.type, price: h.pricePerUnit })) || []),
+  ];
+
+  const handleSaveEdit = async () => {
+    if (!editForm.customerName || editForm.items.length === 0) {
+      toast({ title: "يجب اختيار عميل وإضافة منتج واحد على الأقل", variant: "destructive" });
+      return;
+    }
+    const newTotal = editForm.items.reduce((s, i) => s + i.total, 0);
+    const status = invoice.paidAmount >= newTotal ? "paid" : invoice.paidAmount > 0 ? "partial" : "unpaid";
+    await updateInvoice(invoiceId, {
+      customerName: editForm.customerName,
+      customerId: editForm.customerId,
+      items: editForm.items,
+      totalAmount: newTotal,
+      status,
+      notes: editForm.notes || undefined,
+      dueDate: editForm.dueDate ? new Date(editForm.dueDate) : undefined,
+    });
+    toast({ title: "تم تعديل الفاتورة ✅" });
+    setIsEditing(false);
+  };
 
   const handlePay = async () => {
     if (payAmount <= 0) return;
@@ -837,108 +1010,239 @@ const InvoiceViewDialog = ({ invoiceId, onClose }: { invoiceId: number; onClose:
   };
 
   return (
-    <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
+    <Dialog open onOpenChange={(o) => { if (!o) { setIsEditing(false); onClose(); } }}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>فاتورة {invoice.invoiceNumber}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div>
-              <p className="text-muted-foreground">العميل</p>
-              <p className="font-medium">{invoice.customerName}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">التاريخ</p>
-              <p className="font-medium">{new Date(invoice.date).toLocaleDateString("ar-SA")}</p>
-            </div>
-          </div>
-
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-right text-xs">المنتج</TableHead>
-                <TableHead className="text-right text-xs">الكمية</TableHead>
-                <TableHead className="text-right text-xs">السعر</TableHead>
-                <TableHead className="text-right text-xs">المجموع</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {invoice.items.map((item, idx) => (
-                <TableRow key={idx}>
-                  <TableCell className="text-sm">{item.productName}</TableCell>
-                  <TableCell className="text-sm">{item.quantity}</TableCell>
-                  <TableCell className="text-sm">{item.unitPrice}</TableCell>
-                  <TableCell className="text-sm">{item.total} ر.س</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-
-          <div className="bg-muted/50 rounded-lg p-3 space-y-1 text-sm">
-            <div className="flex justify-between font-bold">
-              <span>الإجمالي</span><span>{invoice.totalAmount} ر.س</span>
-            </div>
-            <div className="flex justify-between text-nature">
-              <span>المدفوع</span><span>{invoice.paidAmount} ر.س</span>
-            </div>
-            {remaining > 0 && (
-              <div className="flex justify-between text-destructive font-semibold">
-                <span>المتبقي</span><span>{remaining} ر.س</span>
-              </div>
+          <div className="flex items-center justify-between">
+            <DialogTitle>فاتورة {invoice.invoiceNumber}</DialogTitle>
+            {!isEditing && (
+              <Button variant="outline" size="sm" onClick={startEditing}>
+                <Pencil className="w-3 h-3 ml-1" /> تعديل
+              </Button>
             )}
           </div>
+        </DialogHeader>
 
-          {/* Payment history */}
-          {payments && payments.length > 0 && (
+        {isEditing ? (
+          <div className="space-y-4">
             <div>
-              <Label className="text-sm font-semibold mb-2 block">سجل الدفعات</Label>
-              <div className="space-y-1">
-                {payments.map(p => (
-                  <div key={p.id} className="flex justify-between text-sm bg-card border rounded-md px-3 py-2">
-                    <span>{new Date(p.date).toLocaleDateString("ar-SA")}</span>
-                    <span className="text-muted-foreground">{p.method === "cash" ? "نقداً" : p.method === "transfer" ? "تحويل" : "أخرى"}</span>
-                    <span className="font-medium text-nature">{p.amount} ر.س</span>
-                  </div>
-                ))}
+              <Label>العميل</Label>
+              <Popover open={editCustomerPicker} onOpenChange={setEditCustomerPicker}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                    {editForm.customerName || "اختر العميل..."}
+                    <ChevronsUpDown className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="ابحث بالاسم..." />
+                    <CommandList>
+                      <CommandEmpty>لا يوجد عملاء مطابقون</CommandEmpty>
+                      <CommandGroup>
+                        {customers?.map(c => (
+                          <CommandItem key={c.id} value={`${c.name} ${c.phone || ""}`} onSelect={() => { setEditForm(f => ({ ...f, customerName: c.name, customerId: c.id })); setEditCustomerPicker(false); }}>
+                            <Check className={cn("ml-2 h-4 w-4", editForm.customerName === c.name ? "opacity-100" : "opacity-0")} />
+                            <span>{c.name}</span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {editForm.items.length > 0 && (
+              <div className="border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-right text-xs">المنتج</TableHead>
+                      <TableHead className="text-right text-xs">الكمية</TableHead>
+                      <TableHead className="text-right text-xs">المجموع</TableHead>
+                      <TableHead className="text-xs w-8"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {editForm.items.map((item, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell className="text-sm">{item.productName}</TableCell>
+                        <TableCell className="text-sm">{item.quantity}</TableCell>
+                        <TableCell className="text-sm">{item.total} ر.س</TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeEditItem(idx)}>
+                            <Trash2 className="w-3 h-3 text-destructive" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+
+            <div className="border rounded-lg p-3 space-y-2 bg-muted/30">
+              <Label className="text-sm font-semibold">إضافة منتج</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Select value={editNewItem.productType} onValueChange={(v) => setEditNewItem(n => ({ ...n, productType: v as any, productName: "" }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hive">خلية</SelectItem>
+                    <SelectItem value="honey">عسل</SelectItem>
+                    <SelectItem value="other">أخرى</SelectItem>
+                  </SelectContent>
+                </Select>
+                {editNewItem.productType === "other" ? (
+                  <Input placeholder="اسم المنتج" value={editNewItem.productName} onChange={e => setEditNewItem(n => ({ ...n, productName: e.target.value }))} />
+                ) : (
+                  <Select value={editNewItem.productName} onValueChange={(v) => {
+                    const product = availableProducts.find(p => p.name === v && p.type === editNewItem.productType);
+                    setEditNewItem(n => ({ ...n, productName: v, unitPrice: product?.price || 0 }));
+                  }}>
+                    <SelectTrigger><SelectValue placeholder="اختر المنتج" /></SelectTrigger>
+                    <SelectContent>
+                      {availableProducts.filter(p => p.type === editNewItem.productType).map((p, i) => (
+                        <SelectItem key={i} value={p.name}>{p.name} - {p.price} ر.س</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs">الكمية</Label>
+                  <Input type="number" min={1} value={editNewItem.quantity} onChange={e => setEditNewItem(n => ({ ...n, quantity: +e.target.value }))} />
+                </div>
+                <div>
+                  <Label className="text-xs">سعر الوحدة</Label>
+                  <Input type="number" min={0} value={editNewItem.unitPrice} onChange={e => setEditNewItem(n => ({ ...n, unitPrice: +e.target.value }))} />
+                </div>
+              </div>
+              <Button variant="outline" size="sm" className="w-full" onClick={addEditItem}>
+                <Plus className="w-3 h-3 ml-1" /> إضافة للفاتورة
+              </Button>
+            </div>
+
+            <div className="bg-primary/5 rounded-lg p-3">
+              <div className="flex justify-between text-sm font-semibold">
+                <span>الإجمالي الجديد:</span>
+                <span>{editTotalAmount} ر.س</span>
               </div>
             </div>
-          )}
 
-          {/* Add payment */}
-          {remaining > 0 && (
-            <>
-              {payOpen ? (
-                <div className="border rounded-lg p-3 space-y-2 bg-muted/30">
-                  <Label className="text-sm">تسجيل دفعة جديدة</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input type="number" placeholder="المبلغ" min={1} max={remaining} value={payAmount} onChange={e => setPayAmount(+e.target.value)} />
-                    <Select value={payMethod} onValueChange={(v) => setPayMethod(v as any)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="cash">نقداً</SelectItem>
-                        <SelectItem value="transfer">تحويل</SelectItem>
-                        <SelectItem value="other">أخرى</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button className="flex-1" onClick={handlePay}>تأكيد الدفع</Button>
-                    <Button variant="outline" onClick={() => setPayOpen(false)}>إلغاء</Button>
-                  </div>
+            <div>
+              <Label className="text-xs">تاريخ الاستحقاق</Label>
+              <Input type="date" value={editForm.dueDate} onChange={e => setEditForm(f => ({ ...f, dueDate: e.target.value }))} />
+            </div>
+
+            <div>
+              <Label className="text-xs">ملاحظات</Label>
+              <Textarea value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} placeholder="ملاحظات..." />
+            </div>
+
+            <div className="flex gap-2">
+              <Button className="flex-1" onClick={handleSaveEdit}>حفظ التعديلات</Button>
+              <Button variant="outline" onClick={() => setIsEditing(false)}>إلغاء</Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div>
+                <p className="text-muted-foreground">العميل</p>
+                <p className="font-medium">{invoice.customerName}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">التاريخ</p>
+                <p className="font-medium">{new Date(invoice.date).toLocaleDateString("ar-SA")}</p>
+              </div>
+            </div>
+
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-right text-xs">المنتج</TableHead>
+                  <TableHead className="text-right text-xs">الكمية</TableHead>
+                  <TableHead className="text-right text-xs">السعر</TableHead>
+                  <TableHead className="text-right text-xs">المجموع</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {invoice.items.map((item, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell className="text-sm">{item.productName}</TableCell>
+                    <TableCell className="text-sm">{item.quantity}</TableCell>
+                    <TableCell className="text-sm">{item.unitPrice}</TableCell>
+                    <TableCell className="text-sm">{item.total} ر.س</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+
+            <div className="bg-muted/50 rounded-lg p-3 space-y-1 text-sm">
+              <div className="flex justify-between font-bold">
+                <span>الإجمالي</span><span>{invoice.totalAmount} ر.س</span>
+              </div>
+              <div className="flex justify-between text-nature">
+                <span>المدفوع</span><span>{invoice.paidAmount} ر.س</span>
+              </div>
+              {remaining > 0 && (
+                <div className="flex justify-between text-destructive font-semibold">
+                  <span>المتبقي</span><span>{remaining} ر.س</span>
                 </div>
-              ) : (
-                <Button variant="outline" className="w-full" onClick={() => { setPayAmount(remaining); setPayOpen(true); }}>
-                  <DollarSign className="w-4 h-4 ml-1" /> تسجيل دفعة
-                </Button>
               )}
-            </>
-          )}
+            </div>
 
-          {invoice.notes && (
-            <p className="text-sm text-muted-foreground">ملاحظات: {invoice.notes}</p>
-          )}
-        </div>
+            {payments && payments.length > 0 && (
+              <div>
+                <Label className="text-sm font-semibold mb-2 block">سجل الدفعات</Label>
+                <div className="space-y-1">
+                  {payments.map(p => (
+                    <div key={p.id} className="flex justify-between text-sm bg-card border rounded-md px-3 py-2">
+                      <span>{new Date(p.date).toLocaleDateString("ar-SA")}</span>
+                      <span className="text-muted-foreground">{p.method === "cash" ? "نقداً" : p.method === "transfer" ? "تحويل" : "أخرى"}</span>
+                      <span className="font-medium text-nature">{p.amount} ر.س</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {remaining > 0 && (
+              <>
+                {payOpen ? (
+                  <div className="border rounded-lg p-3 space-y-2 bg-muted/30">
+                    <Label className="text-sm">تسجيل دفعة جديدة</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input type="number" placeholder="المبلغ" min={1} max={remaining} value={payAmount} onChange={e => setPayAmount(+e.target.value)} />
+                      <Select value={payMethod} onValueChange={(v) => setPayMethod(v as any)}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cash">نقداً</SelectItem>
+                          <SelectItem value="transfer">تحويل</SelectItem>
+                          <SelectItem value="other">أخرى</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button className="flex-1" onClick={handlePay}>تأكيد الدفع</Button>
+                      <Button variant="outline" onClick={() => setPayOpen(false)}>إلغاء</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button variant="outline" className="w-full" onClick={() => { setPayAmount(remaining); setPayOpen(true); }}>
+                    <DollarSign className="w-4 h-4 ml-1" /> تسجيل دفعة
+                  </Button>
+                )}
+              </>
+            )}
+
+            {invoice.notes && (
+              <p className="text-sm text-muted-foreground">ملاحظات: {invoice.notes}</p>
+            )}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
