@@ -114,7 +114,7 @@ export async function seedDatabase() {
       {
         name: "خلية الزهور",
         location: "المزرعة الشرقية",
-        queenStatus: "healthy",
+        queenStatus: "mated",
         lastInspection: "اليوم",
         honeyProduction: 15,
         createdAt: new Date(),
