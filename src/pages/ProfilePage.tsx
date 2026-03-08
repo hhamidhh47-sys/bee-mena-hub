@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { exportDatabase, downloadBackup, importDatabase } from "@/lib/backup";
 import { useRef, useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 const ProfilePage = () => {
   const stats = useHiveStats();
