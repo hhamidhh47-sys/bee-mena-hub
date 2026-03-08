@@ -238,8 +238,36 @@ const WeatherPage = () => {
         )}
       </div>
 
+      {/* Apiary Locations */}
+      {apiaryLocations.length > 0 && (
+        <div className="mb-4">
+          <h3 className="text-sm font-bold mb-2 flex items-center gap-2 text-primary">
+            <MapPin className="w-4 h-4" />
+            مناحلي
+          </h3>
+          <div className="flex gap-2 overflow-x-auto pb-2" style={{ minWidth: "max-content" }}>
+            {apiaryLocations.map(loc => (
+              <button
+                key={loc.name + (loc.id || '')}
+                onClick={() => selectQuickCity({ name: loc.name, lat: loc.lat, lng: loc.lng, country: "منحلي" })}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap flex items-center gap-1 ${
+                  selectedLocation.name === loc.name
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-primary/10 text-primary hover:bg-primary/20"
+                }`}
+              >
+                🐝 {loc.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Quick Cities */}
       <div className="mb-6 overflow-x-auto">
+        <h3 className="text-sm font-bold mb-2 flex items-center gap-2 text-muted-foreground">
+          المدن الكبرى
+        </h3>
         <div className="flex gap-2 pb-2" style={{ minWidth: "max-content" }}>
           {quickCities.map(city => (
             <button
