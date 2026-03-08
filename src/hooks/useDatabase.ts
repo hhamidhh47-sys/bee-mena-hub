@@ -1,5 +1,5 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { db, type Hive, type Task } from "@/lib/db";
+import { db, type Hive, type Task, type UserProfile } from "@/lib/db";
 
 export function useHives(searchQuery = "") {
   return useLiveQuery(() => {
