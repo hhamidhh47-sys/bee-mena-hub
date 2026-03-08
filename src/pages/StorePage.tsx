@@ -35,9 +35,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Search, Package, Droplets, Users, Pencil, Trash2, Check, ChevronsUpDown } from "lucide-react";
-import { useHives, useHiveStock, useHoneyStock, useCustomers, addHiveStock, updateHiveStock, deleteHiveStock, addHoneyStock, updateHoneyStock, deleteHoneyStock, addCustomer, updateCustomer, deleteCustomer } from "@/hooks/useDatabase";
-import type { HiveStock, HoneyStock, Customer } from "@/lib/db";
+import { Plus, Search, Package, Droplets, Users, Pencil, Trash2, Check, ChevronsUpDown, Receipt, AlertCircle, DollarSign, Eye } from "lucide-react";
+import { useHives, useHiveStock, useHoneyStock, useCustomers, addHiveStock, updateHiveStock, deleteHiveStock, addHoneyStock, updateHoneyStock, deleteHoneyStock, addCustomer, updateCustomer, deleteCustomer, useInvoices, addInvoice, deleteInvoice, generateInvoiceNumber, useCustomerDebts, addPayment, usePayments } from "@/hooks/useDatabase";
+import type { HiveStock, HoneyStock, Customer, InvoiceItem } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
