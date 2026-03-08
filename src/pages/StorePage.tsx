@@ -15,6 +15,19 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
   Table,
   TableBody,
   TableCell,
@@ -22,10 +35,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Search, Package, Droplets, Users, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Package, Droplets, Users, Pencil, Trash2, Check, ChevronsUpDown } from "lucide-react";
 import { useHives, useHiveStock, useHoneyStock, useCustomers, addHiveStock, updateHiveStock, deleteHiveStock, addHoneyStock, updateHoneyStock, deleteHoneyStock, addCustomer, updateCustomer, deleteCustomer } from "@/hooks/useDatabase";
 import type { HiveStock, HoneyStock, Customer } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 // --- Hive Stock Tab ---
 const HiveStockTab = () => {
