@@ -133,7 +133,7 @@ export async function seedDatabase() {
       {
         name: "خلية الليمون",
         location: "المزرعة الشمالية",
-        queenStatus: "healthy",
+        queenStatus: "mated",
         lastInspection: "قبل يومين",
         honeyProduction: 10,
         createdAt: new Date(),
