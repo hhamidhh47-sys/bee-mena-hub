@@ -15,6 +15,11 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 import ProfilePage from "./pages/ProfilePage";
 import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
+import InspectionPage from "./pages/InspectionPage";
+import SeasonsPage from "./pages/SeasonsPage";
+import WeatherPage from "./pages/WeatherPage";
+import EducationPage from "./pages/EducationPage";
+import ExpertsPage from "./pages/ExpertsPage";
 
 const queryClient = new QueryClient();
 
@@ -36,7 +41,6 @@ function ProtectedRoutes() {
     );
   }
 
-  // If auth is enabled and no user, redirect to login
   if (authEnabled && !user) return <Navigate to="/login" replace />;
 
   return (
@@ -47,6 +51,11 @@ function ProtectedRoutes() {
       <Route path="/schedule" element={<SchedulePage />} />
       <Route path="/analytics" element={<AnalyticsPage />} />
       <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/inspection/:hiveId" element={<InspectionPage />} />
+      <Route path="/seasons" element={<SeasonsPage />} />
+      <Route path="/weather" element={<WeatherPage />} />
+      <Route path="/education" element={<EducationPage />} />
+      <Route path="/experts" element={<ExpertsPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
