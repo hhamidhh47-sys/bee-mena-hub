@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import beeLogo from "@/assets/bee-logo.png";
 import { useHiveStats, useProfile, updateProfile } from "@/hooks/useDatabase";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/hooks/useAuth";
 import { exportDatabase, downloadBackup, importDatabase } from "@/lib/backup";
 import { useRef, useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
@@ -16,6 +17,7 @@ const ProfilePage = () => {
   const stats = useHiveStats();
   const profile = useProfile();
   const { theme, toggleTheme } = useTheme();
+  const { logout } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState({
@@ -250,7 +252,10 @@ const ProfilePage = () => {
       </div>
 
       {/* Logout */}
-      <button className="w-full mt-6 flex items-center justify-center gap-2 p-4 text-destructive hover:bg-destructive/10 rounded-xl transition-colors">
+      <button
+        onClick={logout}
+        className="w-full mt-6 flex items-center justify-center gap-2 p-4 text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
+      >
         <LogOut className="w-5 h-5" />
         <span className="font-medium">تسجيل الخروج</span>
       </button>

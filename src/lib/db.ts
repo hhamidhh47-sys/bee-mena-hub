@@ -91,8 +91,17 @@ export interface Customer {
   updatedAt: Date;
 }
 
+export interface AuthUser {
+  id?: number;
+  username: string;
+  passwordHash: string;
+  displayName: string;
+  createdAt: Date;
+}
+
 export interface UserProfile {
   id?: number;
+  userId?: number;
   name: string;
   title: string;
   startYear: number;
@@ -103,6 +112,7 @@ export interface UserProfile {
 
 // Database
 const db = new Dexie("NahaliDB") as Dexie & {
+  authUsers: EntityTable<AuthUser, "id">;
   hives: EntityTable<Hive, "id">;
   tasks: EntityTable<Task, "id">;
   inspections: EntityTable<Inspection, "id">;
@@ -114,7 +124,8 @@ const db = new Dexie("NahaliDB") as Dexie & {
   profile: EntityTable<UserProfile, "id">;
 };
 
-db.version(3).stores({
+db.version(4).stores({
+  authUsers: "++id, &username",
   hives: "++id, name, location, queenStatus, createdAt",
   tasks: "++id, date, type, completed, hiveId",
   inspections: "++id, hiveId, date",
@@ -123,7 +134,7 @@ db.version(3).stores({
   hiveStock: "++id, name, status",
   honeyStock: "++id, type, status",
   customers: "++id, name, phone",
-  profile: "++id",
+  profile: "++id, userId",
 });
 
 // Seed default data if empty
