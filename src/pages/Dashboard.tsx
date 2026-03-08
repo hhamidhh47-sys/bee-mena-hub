@@ -6,12 +6,13 @@ import { Grid3X3, Droplets, AlertTriangle, TrendingUp, Plus, ChevronLeft } from 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-honey.jpg";
-import { useHives, useHiveStats, useTasks } from "@/hooks/useDatabase";
+import { useHives, useHiveStats, useTasks, useProfile } from "@/hooks/useDatabase";
 
 const Dashboard = () => {
   const hives = useHives();
   const hiveStats = useHiveStats();
   const tasks = useTasks(new Date().toISOString().split("T")[0]);
+  const profile = useProfile();
 
   const stats = [
     {
@@ -53,7 +54,7 @@ const Dashboard = () => {
           <img src={heroImage} alt="عسل طبيعي" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
           <div className="absolute bottom-4 right-4 left-4">
-            <h2 className="text-2xl font-bold text-foreground mb-1">صباح الخير، أحمد! 🐝</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-1">صباح الخير، {profile?.name || "نحّال"}! 🐝</h2>
             <p className="text-muted-foreground">
               لديك {upcomingTasks.length} مهام اليوم و {hiveStats?.withAlerts ?? 0} تنبيهات جديدة
             </p>

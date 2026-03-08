@@ -1,5 +1,5 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { db, type Hive, type Task } from "@/lib/db";
+import { db, type Hive, type Task, type UserProfile } from "@/lib/db";
 
 export function useHives(searchQuery = "") {
   return useLiveQuery(() => {
@@ -66,4 +66,16 @@ export async function toggleTask(id: number, completed: boolean) {
 
 export async function deleteTask(id: number) {
   return db.tasks.delete(id);
+}
+
+// Profile
+export function useProfile() {
+  return useLiveQuery(() => db.profile.toCollection().first());
+}
+
+export async function updateProfile(changes: Partial<UserProfile>) {
+  const profile = await db.profile.toCollection().first();
+  if (profile?.id) {
+    return db.profile.update(profile.id, changes);
+  }
 }
