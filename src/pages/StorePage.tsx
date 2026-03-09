@@ -585,6 +585,7 @@ const CustomersTab = () => {
             </DialogHeader>
             <div className="space-y-3">
               <Input placeholder="اسم العميل" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+              <Input placeholder="كود العميل (اختياري - يُولّد تلقائياً)" value={form.code} onChange={e => setForm(f => ({ ...f, code: e.target.value }))} dir="ltr" />
               <Input placeholder="رقم الهاتف" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
               <Input placeholder="الموقع / المدينة" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} />
               <Input placeholder="ملاحظات (اختياري)" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
