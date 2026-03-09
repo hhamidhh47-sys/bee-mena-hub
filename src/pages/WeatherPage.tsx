@@ -213,6 +213,9 @@ const WeatherPage = () => {
           <Button onClick={handleLocateMe} size="icon" variant="outline" title="موقعي الحالي">
             <Navigation className="w-4 h-4" />
           </Button>
+          <Button onClick={() => setMapPickerOpen(true)} size="icon" variant="outline" title="اختر من الخريطة">
+            <Map className="w-4 h-4" />
+          </Button>
         </div>
 
         {/* Search Results Dropdown */}
