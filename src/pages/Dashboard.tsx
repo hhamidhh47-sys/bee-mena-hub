@@ -161,6 +161,11 @@ const Dashboard = () => {
         </div>
       </section>
 
+      {/* Weather Alerts */}
+      <section className="mb-8">
+        <WeatherAlerts />
+      </section>
+
       {/* Upcoming Tasks */}
       <section className="mb-8">
         <div className="flex items-center justify-between mb-4">
