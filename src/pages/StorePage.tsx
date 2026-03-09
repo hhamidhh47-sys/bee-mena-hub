@@ -445,6 +445,9 @@ const CustomerDetailDialog = ({ customerId, onClose, onOpenInvoice }: { customer
         <div className="space-y-4">
           <div className="space-y-2">
             <h3 className="text-lg font-bold">{customer.name}</h3>
+            {customer.code && (
+              <span className="inline-block font-mono text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">{customer.code}</span>
+            )}
             {customer.phone && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Phone className="w-4 h-4" />
