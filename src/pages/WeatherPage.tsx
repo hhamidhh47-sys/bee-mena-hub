@@ -417,6 +417,13 @@ const WeatherPage = () => {
           </section>
         </>
       )}
+      <MapPickerModal
+        open={mapPickerOpen}
+        onOpenChange={setMapPickerOpen}
+        onSelectLocation={(loc) => setSelectedLocation(loc)}
+        initialLat={selectedLocation.lat}
+        initialLng={selectedLocation.lng}
+      />
     </AppLayout>
   );
 };
