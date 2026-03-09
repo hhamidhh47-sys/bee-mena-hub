@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import AppLayout from "@/components/AppLayout";
-import { Cloud, Sun, CloudRain, Wind, Droplets, Thermometer, MapPin, Search, CloudSnow, CloudLightning, Loader2, Navigation } from "lucide-react";
+import { Cloud, Sun, CloudRain, Wind, Droplets, Thermometer, MapPin, Search, CloudSnow, CloudLightning, Loader2, Navigation, Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
+import MapPickerModal from "@/components/MapPickerModal";
 
 interface GeoResult {
   id: number;
@@ -102,6 +103,7 @@ const WeatherPage = () => {
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [apiaryLocations, setApiaryLocations] = useState<{ id?: number; name: string; lat: number; lng: number }[]>([]);
+  const [mapPickerOpen, setMapPickerOpen] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("nahali-apiary-locations");
@@ -210,6 +212,9 @@ const WeatherPage = () => {
           </Button>
           <Button onClick={handleLocateMe} size="icon" variant="outline" title="موقعي الحالي">
             <Navigation className="w-4 h-4" />
+          </Button>
+          <Button onClick={() => setMapPickerOpen(true)} size="icon" variant="outline" title="اختر من الخريطة">
+            <Map className="w-4 h-4" />
           </Button>
         </div>
 
@@ -412,6 +417,13 @@ const WeatherPage = () => {
           </section>
         </>
       )}
+      <MapPickerModal
+        open={mapPickerOpen}
+        onOpenChange={setMapPickerOpen}
+        onSelectLocation={(loc) => setSelectedLocation(loc)}
+        initialLat={selectedLocation.lat}
+        initialLng={selectedLocation.lng}
+      />
     </AppLayout>
   );
 };
