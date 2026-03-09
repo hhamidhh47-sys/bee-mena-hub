@@ -522,7 +522,7 @@ const CustomersTab = () => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [editItem, setEditItem] = useState<Customer | null>(null);
-  const [form, setForm] = useState({ name: "", phone: "", location: "", notes: "" });
+  const [form, setForm] = useState({ name: "", phone: "", location: "", notes: "", code: "" });
   const [detailCustomerId, setDetailCustomerId] = useState<number | null>(null);
   const [detailInvoiceId, setDetailInvoiceId] = useState<number | null>(null);
 
