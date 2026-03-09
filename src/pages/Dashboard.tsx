@@ -9,6 +9,7 @@ import heroImage from "@/assets/hero-honey.jpg";
 import { useHives, useHiveStats, useTasks, useProfile } from "@/hooks/useDatabase";
 import { useState } from "react";
 import { generateHiveAlerts } from "@/lib/smartSuggestions";
+import WeatherAlerts from "@/components/WeatherAlerts";
 
 const Dashboard = () => {
   const [fabOpen, setFabOpen] = useState(false);
