@@ -445,6 +445,9 @@ const CustomerDetailDialog = ({ customerId, onClose, onOpenInvoice }: { customer
         <div className="space-y-4">
           <div className="space-y-2">
             <h3 className="text-lg font-bold">{customer.name}</h3>
+            {customer.code && (
+              <span className="inline-block font-mono text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">{customer.code}</span>
+            )}
             {customer.phone && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Phone className="w-4 h-4" />
@@ -522,12 +525,12 @@ const CustomersTab = () => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [editItem, setEditItem] = useState<Customer | null>(null);
-  const [form, setForm] = useState({ name: "", phone: "", location: "", notes: "" });
+  const [form, setForm] = useState({ name: "", phone: "", location: "", notes: "", code: "" });
   const [detailCustomerId, setDetailCustomerId] = useState<number | null>(null);
   const [detailInvoiceId, setDetailInvoiceId] = useState<number | null>(null);
 
   const resetForm = () => {
-    setForm({ name: "", phone: "", location: "", notes: "" });
+    setForm({ name: "", phone: "", location: "", notes: "", code: "" });
     setEditItem(null);
   };
 
@@ -546,7 +549,7 @@ const CustomersTab = () => {
 
   const handleEdit = (item: Customer) => {
     setEditItem(item);
-    setForm({ name: item.name, phone: item.phone || "", location: item.location || "", notes: item.notes || "" });
+    setForm({ name: item.name, phone: item.phone || "", location: item.location || "", notes: item.notes || "", code: item.code || "" });
     setOpen(true);
   };
 
@@ -555,7 +558,7 @@ const CustomersTab = () => {
     toast({ title: "تم الحذف", description: "تم حذف العميل" });
   };
 
-  const filtered = customers?.filter(c => c.name.includes(search) || (c.phone && c.phone.includes(search))) || [];
+  const filtered = customers?.filter(c => c.name.includes(search) || (c.phone && c.phone.includes(search)) || (c.code && c.code.includes(search))) || [];
 
   return (
     <div className="space-y-4">
@@ -573,7 +576,7 @@ const CustomersTab = () => {
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="بحث بالاسم أو رقم الهاتف..." className="pr-9" value={search} onChange={e => setSearch(e.target.value)} />
+          <Input placeholder="بحث بالاسم أو الكود أو رقم الهاتف..." className="pr-9" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
           <DialogTrigger asChild>
@@ -585,6 +588,7 @@ const CustomersTab = () => {
             </DialogHeader>
             <div className="space-y-3">
               <Input placeholder="اسم العميل" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+              <Input placeholder="كود العميل (اختياري - يُولّد تلقائياً)" value={form.code} onChange={e => setForm(f => ({ ...f, code: e.target.value }))} dir="ltr" />
               <Input placeholder="رقم الهاتف" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
               <Input placeholder="الموقع / المدينة" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} />
               <Input placeholder="ملاحظات (اختياري)" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
@@ -601,6 +605,7 @@ const CustomersTab = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="text-right">الكود</TableHead>
                 <TableHead className="text-right">الاسم</TableHead>
                 <TableHead className="text-right">الهاتف</TableHead>
                 <TableHead className="text-right">الموقع</TableHead>
@@ -610,6 +615,7 @@ const CustomersTab = () => {
             <TableBody>
               {filtered.map(item => (
                 <TableRow key={item.id} className="cursor-pointer" onClick={() => item.id && setDetailCustomerId(item.id)}>
+                  <TableCell dir="ltr" className="text-right font-mono text-xs text-primary">{item.code || "-"}</TableCell>
                   <TableCell className="font-medium">{item.name}</TableCell>
                   <TableCell dir="ltr" className="text-right">{item.phone || "-"}</TableCell>
                   <TableCell>{item.location || "-"}</TableCell>
