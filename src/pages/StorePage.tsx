@@ -546,7 +546,7 @@ const CustomersTab = () => {
 
   const handleEdit = (item: Customer) => {
     setEditItem(item);
-    setForm({ name: item.name, phone: item.phone || "", location: item.location || "", notes: item.notes || "" });
+    setForm({ name: item.name, phone: item.phone || "", location: item.location || "", notes: item.notes || "", code: item.code || "" });
     setOpen(true);
   };
 
