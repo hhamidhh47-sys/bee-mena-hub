@@ -77,37 +77,6 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Critical Alerts */}
-      {(criticalAlerts.length > 0 || warningAlerts.length > 0) && (
-        <section className="mb-6">
-          <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-destructive" />
-            تنبيهات مهمة
-          </h3>
-          <div className="space-y-2">
-            {[...criticalAlerts, ...warningAlerts].slice(0, 4).map((alert) => (
-              <div
-                key={alert.id}
-                className={`p-3 rounded-xl border ${severityStyles[alert.severity]} transition-all`}
-              >
-                <div className="flex items-start gap-2">
-                  <span className="text-lg">{alert.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm">{alert.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{alert.description}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-            {(criticalAlerts.length + warningAlerts.length) > 4 && (
-              <Link to="/schedule" className="block text-center text-sm text-primary hover:underline py-1">
-                عرض كل التنبيهات ({criticalAlerts.length + warningAlerts.length})
-              </Link>
-            )}
-          </div>
-        </section>
-      )}
-
       {/* Stats Grid */}
       <section className="mb-8">
         <div className="grid grid-cols-2 gap-4">
