@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import MapPickerModal from "@/components/MapPickerModal";
+import WeatherAlerts from "@/components/WeatherAlerts";
 
 interface GeoResult {
   id: number;
