@@ -527,7 +527,7 @@ const CustomersTab = () => {
   const [detailInvoiceId, setDetailInvoiceId] = useState<number | null>(null);
 
   const resetForm = () => {
-    setForm({ name: "", phone: "", location: "", notes: "" });
+    setForm({ name: "", phone: "", location: "", notes: "", code: "" });
     setEditItem(null);
   };
 
