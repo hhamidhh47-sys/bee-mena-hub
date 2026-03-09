@@ -602,6 +602,7 @@ const CustomersTab = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="text-right">الكود</TableHead>
                 <TableHead className="text-right">الاسم</TableHead>
                 <TableHead className="text-right">الهاتف</TableHead>
                 <TableHead className="text-right">الموقع</TableHead>
