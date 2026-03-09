@@ -291,6 +291,9 @@ const WeatherPage = () => {
         </div>
       </div>
 
+      {/* Automatic Weather Alerts */}
+      <WeatherAlerts className="mb-6" />
+
       {/* Loading */}
       {loading && (
         <div className="flex items-center justify-center py-20">
