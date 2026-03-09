@@ -103,6 +103,7 @@ const WeatherPage = () => {
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [apiaryLocations, setApiaryLocations] = useState<{ id?: number; name: string; lat: number; lng: number }[]>([]);
+  const [mapPickerOpen, setMapPickerOpen] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("nahali-apiary-locations");
