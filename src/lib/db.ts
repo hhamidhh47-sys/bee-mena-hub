@@ -119,6 +119,7 @@ export interface HoneyStock {
 
 export interface Customer {
   id?: number;
+  code?: string;
   name: string;
   phone?: string;
   location?: string;

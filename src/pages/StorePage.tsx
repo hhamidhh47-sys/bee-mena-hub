@@ -612,6 +612,7 @@ const CustomersTab = () => {
             <TableBody>
               {filtered.map(item => (
                 <TableRow key={item.id} className="cursor-pointer" onClick={() => item.id && setDetailCustomerId(item.id)}>
+                  <TableCell dir="ltr" className="text-right font-mono text-xs text-primary">{item.code || "-"}</TableCell>
                   <TableCell className="font-medium">{item.name}</TableCell>
                   <TableCell dir="ltr" className="text-right">{item.phone || "-"}</TableCell>
                   <TableCell>{item.location || "-"}</TableCell>

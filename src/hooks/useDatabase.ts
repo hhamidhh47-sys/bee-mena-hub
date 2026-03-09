@@ -119,8 +119,15 @@ export function useCustomers() {
   return useLiveQuery(() => db.customers.toArray());
 }
 
+export async function generateCustomerCode() {
+  const count = await db.customers.count();
+  const num = String(count + 1).padStart(4, "0");
+  return `C-${num}`;
+}
+
 export async function addCustomer(item: Omit<Customer, "id" | "createdAt" | "updatedAt">) {
-  return db.customers.add({ ...item, createdAt: new Date(), updatedAt: new Date() });
+  const code = item.code || await generateCustomerCode();
+  return db.customers.add({ ...item, code, createdAt: new Date(), updatedAt: new Date() });
 }
 
 export async function updateCustomer(id: number, changes: Partial<Customer>) {
