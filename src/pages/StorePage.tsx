@@ -555,7 +555,7 @@ const CustomersTab = () => {
     toast({ title: "تم الحذف", description: "تم حذف العميل" });
   };
 
-  const filtered = customers?.filter(c => c.name.includes(search) || (c.phone && c.phone.includes(search))) || [];
+  const filtered = customers?.filter(c => c.name.includes(search) || (c.phone && c.phone.includes(search)) || (c.code && c.code.includes(search))) || [];
 
   return (
     <div className="space-y-4">
