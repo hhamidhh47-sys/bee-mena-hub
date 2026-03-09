@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import AppLayout from "@/components/AppLayout";
-import { Cloud, Sun, CloudRain, Wind, Droplets, Thermometer, MapPin, Search, CloudSnow, CloudLightning, Loader2, Navigation } from "lucide-react";
+import { Cloud, Sun, CloudRain, Wind, Droplets, Thermometer, MapPin, Search, CloudSnow, CloudLightning, Loader2, Navigation, Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
+import MapPickerModal from "@/components/MapPickerModal";
 
 interface GeoResult {
   id: number;
